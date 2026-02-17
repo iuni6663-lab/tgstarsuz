@@ -3,105 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TGSTORE UZ</title>
+    <title>TGSTORE UZ | Pro</title>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
-            --bg: #000000;
-            --card: #111111;
+            --bg: #050505;
+            --surface: #0f0f0f;
             --accent: #007AFF;
+            --accent-glow: rgba(0, 122, 255, 0.3);
+            --border: rgba(255, 255, 255, 0.08);
             --text: #ffffff;
-            --border: #222222;
+            --text-mute: #88888b;
         }
 
         body {
             background-color: var(--bg);
             color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-            margin: 0; padding: 0;
+            font-family: 'SF Pro Display', -apple-system, system-ui, sans-serif;
+            margin: 0; padding: 0; overflow-x: hidden;
         }
 
-        .main-wrapper { max-width: 500px; margin: 0 auto; padding: 20px; }
-
-        /* --- VERIFICATION CARD --- */
-        .v-card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 20px; padding: 25px; text-align: center;
-            margin-bottom: 25px;
+        /* Complex Background Animation */
+        .bg-glow {
+            position: fixed; top: -10%; left: -10%; width: 40%; height: 40%;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            filter: blur(80px); z-index: -1; animation: move 15s infinite alternate;
         }
-        .v-icon { font-size: 40px; margin-bottom: 15px; color: #444; }
-        .v-icon.verified { color: var(--accent); }
 
-        /* --- PRODUCTS (HIDDEN BY DEFAULT) --- */
-        #shop-section { display: none; } /* Akkaunt tasdiqlanmaguncha ko'rinmaydi */
+        @keyframes move { from { transform: translate(0, 0); } to { transform: translate(100vw, 80vh); } }
+
+        .app-shell { max-width: 500px; margin: 0 auto; min-height: 100vh; padding: 25px 16px; }
+
+        /* Status UI Components */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 28px; padding: 30px;
+            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .status-badge {
+            display: inline-block; padding: 6px 16px; border-radius: 100px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+            margin-bottom: 20px; text-transform: uppercase;
+        }
+        .st-unverified { background: rgba(255, 69, 58, 0.1); color: #FF453A; }
+        .st-pending { background: rgba(255, 214, 10, 0.1); color: #FFD60A; }
+        .st-verified { background: rgba(50, 215, 75, 0.1); color: #32D74B; }
+
+        /* Stars Product Grid */
+        #stars-engine { display: none; }
+        .stars-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 25px; }
         
-        .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .p-card {
-            background: var(--card); border: 1px solid var(--border);
-            border-radius: 15px; padding: 15px; text-align: center;
-            transition: 0.2s;
+        .star-box {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 24px; padding: 20px; position: relative;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1); cursor: pointer;
         }
-        .p-card.active { border-color: var(--accent); background: rgba(0, 122, 255, 0.1); }
-        .p-img { width: 40px; height: 40px; margin-bottom: 10px; }
+        .star-box:active { transform: scale(0.95); }
+        .star-box.selected { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); }
 
-        /* --- INPUT --- */
-        .tg-input {
-            background: var(--card); border: 1px solid var(--border);
-            color: #fff; width: 100%; padding: 15px; border-radius: 12px;
-            margin-top: 15px; outline: none;
+        .star-svg { width: 50px; height: 50px; margin-bottom: 12px; }
+
+        /* Professional Input */
+        .input-group-pro {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 20px; padding: 18px; margin-top: 25px;
+            display: flex; align-items: center; transition: 0.3s;
+        }
+        .input-group-pro:focus-within { border-color: var(--accent); }
+        .input-group-pro input {
+            background: transparent; border: none; color: white;
+            width: 100%; outline: none; margin-left: 12px; font-size: 16px;
         }
 
-        /* --- MAIN BUTTON --- */
-        .bottom-nav {
+        /* Bottom Tab-like Button */
+        .action-bar {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            padding: 20px; background: linear-gradient(to top, #000 80%, transparent);
+            padding: 20px 20px calc(25px + env(safe-area-inset-bottom));
+            background: linear-gradient(to top, var(--bg) 90%, transparent);
+            z-index: 1000;
         }
-        .btn-main {
-            background: var(--accent); color: #fff; border: none;
-            width: 100%; padding: 18px; border-radius: 15px;
-            font-weight: 700; font-size: 16px;
+        .btn-universal {
+            background: var(--accent); color: white; border: none;
+            width: 100%; padding: 18px; border-radius: 20px;
+            font-weight: 700; font-size: 17px; transition: 0.3s;
+            box-shadow: 0 10px 30px var(--accent-glow);
         }
-        .btn-main:disabled { background: #222; color: #555; }
+        .btn-universal:disabled { background: #222; color: #555; box-shadow: none; cursor: not-allowed; }
+
+        /* Order Log */
+        .order-log { margin-top: 40px; padding-bottom: 100px; }
+        .log-item {
+            background: rgba(255,255,255,0.02); padding: 15px;
+            border-radius: 18px; margin-bottom: 10px; border: 1px solid var(--border);
+            display: flex; justify-content: space-between; align-items: center;
+        }
     </style>
 </head>
 <body>
 
-<div class="main-wrapper">
-    <h4 class="fw-bold mb-4">TGSTORE UZ</h4>
+<div class="bg-glow"></div>
 
-    <div id="v-block" class="v-card">
-        <i id="v-icon" class="fas fa-shield-alt v-icon"></i>
-        <h5 id="v-title" class="fw-bold">Hisobingiz tasdiqlanmagan</h5>
-        <p id="v-desc" class="small text-secondary">Buyurtma berish uchun akkauntingizni tizimda ro'yxatdan o'tkazing.</p>
-        <button id="v-btn" class="btn btn-primary w-100 rounded-pill py-2" onclick="startVerification()">TASDIQLASH</button>
+<div class="app-shell">
+    <header class="d-flex justify-content-between align-items-center mb-5">
+        <h3 class="fw-bold m-0" style="letter-spacing: -1px;">TGSTORE UZ</h3>
+        <div class="text-mute small" id="session-info">Connecting...</div>
+    </header>
+
+    <div id="verify-shell" class="glass-card animate__animated animate__fadeIn">
+        <div id="v-status-badge" class="status-badge st-unverified">NOT VERIFIED</div>
+        <h4 class="fw-bold mb-2" id="v-title">Akkauntingizni Tasdiqlang</h4>
+        <p class="text-mute small mb-4" id="v-desc">Stars sotib olish uchun admin tomonidan tasdiqlanishni so'rashingiz kerak.</p>
+        
+        <button id="v-action-btn" class="btn btn-primary w-100 rounded-pill py-3 fw-bold" onclick="requestVerification()">
+            TASDIQLASHNI SO'RASH
+        </button>
     </div>
 
-    <div id="shop-section">
-        <h6 class="text-secondary small fw-bold mb-3">STARS PAKETLARI</h6>
-        <div class="p-grid" id="p-container">
+    <div id="stars-engine" class="animate__animated animate__fadeIn">
+        <div class="d-flex justify-content-between align-items-end">
+            <h6 class="text-mute fw-bold mb-0">STARS PAKETLARI</h6>
+            <span class="badge bg-primary" style="font-size: 10px;">PROMO 2026</span>
+        </div>
+
+        <div class="stars-grid" id="product-list">
             </div>
 
-        <input type="text" id="target-user" class="tg-input" placeholder="Username (masalan: @abdu)">
-        
-        <div class="mt-4">
-            <h6 class="text-secondary small fw-bold mb-3">BUYURTMALARIM</h6>
-            <div id="my-orders"></div>
+        <div class="input-group-pro">
+            <i class="fas fa-at text-primary"></i>
+            <input type="text" id="target-account" placeholder="Username (masalan: @durov)" spellcheck="false">
+        </div>
+
+        <div class="order-log">
+            <h6 class="text-mute fw-bold mb-3">OXIRGI TRANZAKSIYALAR</h6>
+            <div id="log-container"></div>
         </div>
     </div>
 </div>
 
-<div class="bottom-nav">
-    <button id="buy-btn" class="btn-main" disabled onclick="sendOrder()">XIZMATNI TANLANG</button>
+<div class="action-bar">
+    <button id="main-btn" class="btn-universal" disabled onclick="checkout()">
+        TASDIQLANMAGAN
+    </button>
 </div>
 
 <script>
+    /**
+     * TGSTORE UZ - CORE LOGIC v2.0
+     * Built for high scalability and secure admin approval
+     */
+
+    // --- Firebase Initialization ---
     const firebaseConfig = {
         apiKey: "AIzaSyDgMXCfXW_I70t0m-pZhfi7HTbiCBB70dg",
         databaseURL: "https://tgstars-29ae3-default-rtdb.firebaseio.com",
@@ -110,114 +170,144 @@
     const db = firebase.database();
     const tg = window.Telegram.WebApp;
 
-    const DATA = [
-        { id: 's50', n: 50, p: 15000 },
-        { id: 's100', n: 100, p: 29000 },
-        { id: 's250', n: 250, p: 69000 },
-        { id: 's500', n: 500, p: 135000 }
-    ];
-
-    let user = tg.initDataUnsafe.user || { id: 0, first_name: 'Mehmon' };
-    let selected = null;
-
-    // 1. Sahifa yuklanganda holatni tekshirish
-    window.onload = () => {
-        tg.expand();
-        checkUserStatus();
+    // --- State Management ---
+    const AppState = {
+        user: tg.initDataUnsafe.user || { id: 888, first_name: 'DevUser', username: 'tester' },
+        isVerified: false,
+        pendingApproval: false,
+        selectedProduct: null,
+        products: [
+            { id: 'p50', stars: 50, price: 15000 },
+            { id: 'p100', stars: 100, price: 29000 },
+            { id: 'p250', stars: 250, price: 69000 },
+            { id: 'p500', stars: 500, price: 135000 },
+            { id: 'p1000', stars: 1000, price: 265000 }
+        ]
     };
 
-    function checkUserStatus() {
-        // Firebase orqali foydalanuvchini tekshiramiz
-        db.ref('users/' + user.id).once('value', snap => {
-            if (snap.exists() && snap.val().verified) {
-                showShop();
+    // --- Initialize Application ---
+    window.onload = () => {
+        tg.expand();
+        tg.enableClosingConfirmation();
+        document.getElementById('session-info').innerText = "Session ID: " + AppState.user.id;
+        syncUserStatus();
+    };
+
+    // --- Data Sync Logic ---
+    function syncUserStatus() {
+        db.ref('users/' + AppState.user.id).on('value', snap => {
+            const data = snap.val();
+            
+            if (data) {
+                if (data.status === 'verified') {
+                    unlockStore();
+                } else if (data.status === 'pending') {
+                    setPendingUI();
+                }
             }
         });
     }
 
-    // 2. Tasdiqlash funksiyasi (Haqiqiy Firebase yozuvi bilan)
-    function startVerification() {
-        const btn = document.getElementById('v-btn');
-        btn.innerText = "TASDIQLANMOQDA...";
+    function requestVerification() {
+        const btn = document.getElementById('v-action-btn');
         btn.disabled = true;
+        btn.innerText = "SO'ROV YUBORILDI...";
 
-        // Baza bilan bog'lanish
-        db.ref('users/' + user.id).set({
-            name: user.first_name,
-            username: user.username || 'yoq',
-            verified: true,
-            date: Date.now()
+        db.ref('users/' + AppState.user.id).set({
+            name: AppState.user.first_name,
+            username: AppState.user.username || 'n/a',
+            status: 'pending',
+            timestamp: Date.now()
         }).then(() => {
-            setTimeout(() => {
-                tg.HapticFeedback.notificationOccurred('success');
-                showShop();
-            }, 1000);
+            setPendingUI();
+            tg.HapticFeedback.notificationOccurred('success');
         });
     }
 
-    function showShop() {
-        document.getElementById('v-block').style.display = 'none';
-        document.getElementById('shop-section').style.display = 'block';
-        renderProducts();
-        loadMyOrders();
+    function setPendingUI() {
+        const badge = document.getElementById('v-status-badge');
+        badge.className = "status-badge st-pending";
+        badge.innerText = "PENDING APPROVAL";
+        document.getElementById('v-title').innerText = "Kutilmoqda...";
+        document.getElementById('v-desc').innerText = "Admin sizning akkauntingizni tasdiqlashi kerak. Iltimos, bir oz kutib turing.";
+        document.getElementById('v-action-btn').style.display = "none";
     }
 
+    function unlockStore() {
+        document.getElementById('verify-shell').style.display = "none";
+        document.getElementById('stars-engine').style.display = "block";
+        document.getElementById('main-btn').innerText = "MAHSULOT TANLANG";
+        renderProducts();
+        loadLogs();
+    }
+
+    // --- UI Renderers ---
     function renderProducts() {
-        const cont = document.getElementById('p-container');
-        cont.innerHTML = DATA.map(i => `
-            <div class="p-card" id="c-${i.id}" onclick="pick('${i.id}')">
-                <img src="https://telegram.org/img/tgstars.png" class="p-img">
-                <div class="fw-bold">${i.n} Stars</div>
-                <div class="small text-secondary">${i.p.toLocaleString()} s</div>
+        const container = document.getElementById('product-list');
+        container.innerHTML = AppState.products.map(p => `
+            <div class="star-box" id="${p.id}" onclick="selectProduct('${p.id}')">
+                <svg class="star-svg" viewBox="0 0 512 512">
+                    <path fill="#FFD700" d="M256 0l79.1 160.2L512 185.8l-128 124.8L414.2 512 256 428.8 97.8 512l30.2-201.4-128-124.8 176.9-25.6z"/>
+                </svg>
+                <div class="fw-bold">${p.stars} Stars</div>
+                <div class="small text-mute">${p.price.toLocaleString()} s</div>
             </div>
         `).join('');
     }
 
-    function pick(id) {
-        selected = DATA.find(x => x.id === id);
-        document.querySelectorAll('.p-card').forEach(el => el.classList.remove('active'));
-        document.getElementById('c-' + id).classList.add('active');
+    function selectProduct(id) {
+        AppState.selectedProduct = AppState.products.find(x => x.id === id);
+        document.querySelectorAll('.star-box').forEach(el => el.classList.remove('selected'));
+        document.getElementById(id).classList.add('selected');
         
-        const b = document.getElementById('buy-btn');
-        b.disabled = false;
-        b.innerText = `SOTIB OLISH: ${selected.p.toLocaleString()} S`;
-        tg.HapticFeedback.impactOccurred('light');
+        const mainBtn = document.getElementById('main-btn');
+        mainBtn.disabled = false;
+        mainBtn.innerText = `SOTIB OLISH: ${AppState.selectedProduct.price.toLocaleString()} S`;
+        tg.HapticFeedback.impactOccurred('medium');
     }
 
-    function sendOrder() {
-        const target = document.getElementById('target-user').value;
-        if(!target) return tg.showAlert("Usernameni kiriting!");
+    function checkout() {
+        const target = document.getElementById('target-account').value;
+        if (!target) return tg.showAlert("Qabul qiluvchi usernameni kiriting!");
 
-        const oid = "TG-" + Date.now();
-        db.ref('orders/' + oid).set({
-            userId: user.id,
-            userName: user.first_name,
-            product: selected.n + " Stars",
-            price: selected.p,
-            target: target,
+        const oid = "TG-" + Date.now().toString().slice(-6);
+        const orderData = {
+            userId: AppState.user.id,
+            userName: AppState.user.first_name,
+            product: AppState.selectedProduct.stars + " Stars",
+            price: AppState.selectedProduct.price,
+            target: target.replace('@', ''),
             status: 'pending',
             createdAt: firebase.database.ServerValue.TIMESTAMP
-        }).then(() => {
+        };
+
+        db.ref('orders/' + oid).set(orderData).then(() => {
             tg.showPopup({
-                title: 'Qabul qilindi!',
-                message: 'To\'lov uchun Click ilovasiga o\'ting.',
-                buttons: [{text: 'OK', type: 'destructive'}]
+                title: 'To\'lov kutilmoqda',
+                message: 'Buyurtmangiz tizimga kiritildi. To\'lov uchun Click ilovasiga o\'ting.',
+                buttons: [{text: 'CLICKGA O\'TISH', type: 'ok'}]
             }, () => {
                 tg.openLink("https://my.click.uz/clickp2p/30325C351A3F7F8C133EC334D17080FB834F5478346C01564BA3C310DA04F48F");
             });
         });
     }
 
-    function loadMyOrders() {
-        db.ref('orders').orderByChild('userId').equalTo(user.id).on('value', snap => {
+    function loadLogs() {
+        db.ref('orders').orderByChild('userId').equalTo(AppState.user.id).on('value', snap => {
             const data = snap.val();
-            const box = document.getElementById('my-orders');
-            if(!data) return box.innerHTML = "<p class='small text-secondary'>Hali buyurtmalar yo'q</p>";
+            const container = document.getElementById('log-container');
+            if(!data) return;
 
-            box.innerHTML = Object.values(data).reverse().map(o => `
-                <div class="d-flex justify-content-between border-bottom border-secondary py-2">
-                    <span class="small">${o.product} (@${o.target})</span>
-                    <span class="small fw-bold text-uppercase" style="color:${o.status==='done'?'#32D74B':'#FFD60A'}">${o.status}</span>
+            container.innerHTML = Object.values(data).reverse().map(o => `
+                <div class="log-item animate__animated animate__fadeIn">
+                    <div>
+                        <div class="fw-bold small">${o.product}</div>
+                        <div class="text-mute" style="font-size:10px;">@${o.target}</div>
+                    </div>
+                    <div class="text-end">
+                        <div class="small fw-bold text-uppercase" style="color:${o.status==='done'?'#32D74B':(o.status==='rejected'?'#FF453A':'#FFD60A')}">${o.status}</div>
+                        <div class="text-mute" style="font-size:9px;">${new Date(o.createdAt).toLocaleDateString()}</div>
+                    </div>
                 </div>
             `).join('');
         });
