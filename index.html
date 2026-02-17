@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TGSTORE UZ | Premium Services</title>
+    <title>TGSTORE UZ</title>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
@@ -14,167 +14,94 @@
 
     <style>
         :root {
-            --bg-color: #000000;
-            --card-color: #111111;
-            --accent-color: #007AFF;
-            --text-main: #FFFFFF;
-            --text-secondary: #8E8E93;
-            --border-color: #2C2C2E;
-            --success: #32D74B;
-            --warning: #FFD60A;
-            --danger: #FF453A;
+            --bg: #000000;
+            --card: #111111;
+            --accent: #007AFF;
+            --text: #ffffff;
+            --border: #222222;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: -apple-system, system-ui, BlinkMacSystemFont, "SF Pro Text", Roboto;
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0; padding: 0;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
         }
 
-        /* --- Global Layout --- */
-        .container-fluid { max-width: 500px; padding: 0 16px; }
+        .main-wrapper { max-width: 500px; margin: 0 auto; padding: 20px; }
+
+        /* --- VERIFICATION CARD --- */
+        .v-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 20px; padding: 25px; text-align: center;
+            margin-bottom: 25px;
+        }
+        .v-icon { font-size: 40px; margin-bottom: 15px; color: #444; }
+        .v-icon.verified { color: var(--accent); }
+
+        /* --- PRODUCTS (HIDDEN BY DEFAULT) --- */
+        #shop-section { display: none; } /* Akkaunt tasdiqlanmaguncha ko'rinmaydi */
         
-        .header-bar {
-            padding: 24px 0; border-bottom: 1px solid var(--border-color);
-            margin-bottom: 20px;
+        .p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .p-card {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 15px; padding: 15px; text-align: center;
+            transition: 0.2s;
+        }
+        .p-card.active { border-color: var(--accent); background: rgba(0, 122, 255, 0.1); }
+        .p-img { width: 40px; height: 40px; margin-bottom: 10px; }
+
+        /* --- INPUT --- */
+        .tg-input {
+            background: var(--card); border: 1px solid var(--border);
+            color: #fff; width: 100%; padding: 15px; border-radius: 12px;
+            margin-top: 15px; outline: none;
         }
 
-        /* --- Verification Section --- */
-        #verification-block {
-            background: var(--card-color); border: 1px solid var(--border-color);
-            border-radius: 16px; padding: 20px; margin-bottom: 24px;
-        }
-        .verify-badge {
-            font-size: 11px; font-weight: 700; padding: 4px 10px;
-            border-radius: 100px; text-transform: uppercase;
-        }
-        .badge-unverified { background: rgba(255, 69, 58, 0.1); color: var(--danger); }
-        .badge-verified { background: rgba(50, 215, 75, 0.1); color: var(--success); }
-
-        /* --- Products Grid --- */
-        .product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        .product-card {
-            background: var(--card-color); border: 1px solid var(--border-color);
-            border-radius: 20px; padding: 16px; transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative; opacity: 0.5; pointer-events: none; /* Block before verification */
-        }
-        .product-card.unlocked { opacity: 1; pointer-events: auto; }
-        .product-card.selected { border-color: var(--accent-color); background: rgba(0, 122, 255, 0.05); }
-        
-        .stars-icon {
-            width: 48px; height: 48px; margin-bottom: 12px;
-            background: url('https://telegram.org/img/tgstars.png') no-repeat center;
-            background-size: contain;
-        }
-
-        /* --- Functional Input --- */
-        .input-wrapper {
-            margin-top: 24px; position: relative;
-        }
-        .custom-input {
-            background: var(--card-color); border: 1px solid var(--border-color);
-            border-radius: 14px; padding: 16px 45px 16px 16px; color: white;
-            width: 100%; outline: none; font-size: 16px;
-        }
-        .custom-input:focus { border-color: var(--accent-color); }
-        .input-icon { position: absolute; right: 16px; top: 18px; color: var(--text-secondary); }
-
-        /* --- Textual Status History --- */
-        .order-history { margin-top: 32px; }
-        .history-item {
-            padding: 16px 0; border-bottom: 1px solid var(--border-color);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .status-text { font-size: 13px; font-weight: 600; text-transform: uppercase; }
-        .status-pending { color: var(--warning); }
-        .status-approved { color: var(--accent-color); }
-        .status-done { color: var(--success); }
-        .status-rejected { color: var(--danger); }
-
-        /* --- Footer Main Button --- */
-        .sticky-footer {
+        /* --- MAIN BUTTON --- */
+        .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            padding: 20px 16px calc(24px + env(safe-area-inset-bottom));
-            background: linear-gradient(180deg, transparent, var(--bg-color) 40%);
+            padding: 20px; background: linear-gradient(to top, #000 80%, transparent);
         }
-        .btn-action {
-            background: var(--accent-color); color: white; border: none;
-            width: 100%; padding: 18px; border-radius: 16px;
-            font-size: 17px; font-weight: 700; transition: 0.3s;
+        .btn-main {
+            background: var(--accent); color: #fff; border: none;
+            width: 100%; padding: 18px; border-radius: 15px;
+            font-weight: 700; font-size: 16px;
         }
-        .btn-action:disabled { background: #2C2C2E; color: #48484A; }
-
-        /* --- Modals/Overlays --- */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
-            z-index: 1000; display: none; align-items: center; justify-content: center;
-            padding: 20px;
-        }
-        .modal-content {
-            background: var(--card-color); border: 1px solid var(--border-color);
-            border-radius: 24px; padding: 24px; width: 100%; max-width: 400px;
-        }
+        .btn-main:disabled { background: #222; color: #555; }
     </style>
 </head>
 <body>
 
-<div class="container-fluid">
-    <header class="header-bar d-flex justify-content-between align-items-center">
-        <h4 class="fw-bold mb-0">TGSTORE UZ</h4>
-        <div id="connection-status" class="small text-secondary">● Bog'lanishda...</div>
-    </header>
+<div class="main-wrapper">
+    <h4 class="fw-bold mb-4">TGSTORE UZ</h4>
 
-    <section id="verification-block">
-        <div class="d-flex justify-content-between align-items-start mb-3">
-            <div>
-                <h6 class="mb-1 fw-bold">Akkaunt Holati</h6>
-                <p id="verify-text" class="small text-secondary mb-0">Tasdiqlash kutilmoqda</p>
+    <div id="v-block" class="v-card">
+        <i id="v-icon" class="fas fa-shield-alt v-icon"></i>
+        <h5 id="v-title" class="fw-bold">Hisobingiz tasdiqlanmagan</h5>
+        <p id="v-desc" class="small text-secondary">Buyurtma berish uchun akkauntingizni tizimda ro'yxatdan o'tkazing.</p>
+        <button id="v-btn" class="btn btn-primary w-100 rounded-pill py-2" onclick="startVerification()">TASDIQLASH</button>
+    </div>
+
+    <div id="shop-section">
+        <h6 class="text-secondary small fw-bold mb-3">STARS PAKETLARI</h6>
+        <div class="p-grid" id="p-container">
             </div>
-            <span id="verify-badge" class="verify-badge badge-unverified">UNVERIFIED</span>
-        </div>
-        <button id="verify-btn" class="btn btn-outline-primary btn-sm w-100 rounded-pill" onclick="verifyAccount()">
-            TASDIQLASHNI BOSHLASH
-        </button>
-    </section>
 
-    <h6 class="text-secondary mb-3 px-1" style="font-size: 12px; font-weight: 700;">STARS PAKETLARI</h6>
-    <div class="product-grid" id="product-container">
-        </div>
-
-    <div class="input-wrapper">
-        <input type="text" id="target-id" class="custom-input" placeholder="Qabul qiluvchi ID yoki Username" disabled>
-        <i class="fas fa-user-circle input-icon"></i>
-    </div>
-
-    <div class="order-history">
-        <h6 class="text-secondary mb-3 px-1" style="font-size: 12px; font-weight: 700;">BUYURTMALAR TARIXI</h6>
-        <div id="history-list">
-            <p class="text-center text-secondary small py-4">Hozircha ma'lumot yo'q</p>
+        <input type="text" id="target-user" class="tg-input" placeholder="Username (masalan: @abdu)">
+        
+        <div class="mt-4">
+            <h6 class="text-secondary small fw-bold mb-3">BUYURTMALARIM</h6>
+            <div id="my-orders"></div>
         </div>
     </div>
 </div>
 
-<div class="sticky-footer">
-    <button id="main-action-btn" class="btn-action" disabled onclick="processCheckout()">
-        OLDIN TASDIQLANG
-    </button>
-</div>
-
-<div id="success-modal" class="modal-overlay">
-    <div class="modal-content text-center animate__animated animate__zoomIn">
-        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
-        <h4 class="fw-bold">Buyurtma Qabul Qilindi</h4>
-        <p class="text-secondary small mb-4">To'lov uchun Click ilovasiga o'tamiz. To'lovdan so'ng buyurtma avtomatik tasdiqlanadi.</p>
-        <button class="btn-action" onclick="closeModal()">TUSHUNARLI</button>
-    </div>
+<div class="bottom-nav">
+    <button id="buy-btn" class="btn-main" disabled onclick="sendOrder()">XIZMATNI TANLANG</button>
 </div>
 
 <script>
-    // --- Configuration ---
     const firebaseConfig = {
         apiKey: "AIzaSyDgMXCfXW_I70t0m-pZhfi7HTbiCBB70dg",
         databaseURL: "https://tgstars-29ae3-default-rtdb.firebaseio.com",
@@ -183,159 +110,117 @@
     const db = firebase.database();
     const tg = window.Telegram.WebApp;
 
-    const PRODUCTS = [
-        { id: 's50', stars: 50, price: 15000 },
-        { id: 's100', stars: 100, price: 29000 },
-        { id: 's250', stars: 250, price: 69000 },
-        { id: 's500', stars: 500, price: 135000 },
-        { id: 's1000', stars: 1000, price: 265000 },
-        { id: 's2500', stars: 2500, price: 650000 }
+    const DATA = [
+        { id: 's50', n: 50, p: 15000 },
+        { id: 's100', n: 100, p: 29000 },
+        { id: 's250', n: 250, p: 69000 },
+        { id: 's500', n: 500, p: 135000 }
     ];
 
-    let state = {
-        isVerified: false,
-        selectedProduct: null,
-        user: null
-    };
+    let user = tg.initDataUnsafe.user || { id: 0, first_name: 'Mehmon' };
+    let selected = null;
 
-    // --- Core Logic ---
+    // 1. Sahifa yuklanganda holatni tekshirish
     window.onload = () => {
         tg.expand();
-        tg.ready();
-        tg.setHeaderColor('#000000');
-
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            state.user = tg.initDataUnsafe.user;
-            document.getElementById('connection-status').innerText = '● Bog'langan';
-        } else {
-            document.getElementById('connection-status').innerText = '● Tashqi brauzer';
-        }
-
-        renderProducts();
-        checkLocalSession();
+        checkUserStatus();
     };
 
+    function checkUserStatus() {
+        // Firebase orqali foydalanuvchini tekshiramiz
+        db.ref('users/' + user.id).once('value', snap => {
+            if (snap.exists() && snap.val().verified) {
+                showShop();
+            }
+        });
+    }
+
+    // 2. Tasdiqlash funksiyasi (Haqiqiy Firebase yozuvi bilan)
+    function startVerification() {
+        const btn = document.getElementById('v-btn');
+        btn.innerText = "TASDIQLANMOQDA...";
+        btn.disabled = true;
+
+        // Baza bilan bog'lanish
+        db.ref('users/' + user.id).set({
+            name: user.first_name,
+            username: user.username || 'yoq',
+            verified: true,
+            date: Date.now()
+        }).then(() => {
+            setTimeout(() => {
+                tg.HapticFeedback.notificationOccurred('success');
+                showShop();
+            }, 1000);
+        });
+    }
+
+    function showShop() {
+        document.getElementById('v-block').style.display = 'none';
+        document.getElementById('shop-section').style.display = 'block';
+        renderProducts();
+        loadMyOrders();
+    }
+
     function renderProducts() {
-        const container = document.getElementById('product-container');
-        container.innerHTML = PRODUCTS.map(p => `
-            <div class="product-card" id="card-${p.id}" onclick="selectProduct('${p.id}')">
-                <div class="stars-icon"></div>
-                <div class="fw-bold mb-1">${p.stars} Stars</div>
-                <div class="small text-secondary">${p.price.toLocaleString()} so'm</div>
+        const cont = document.getElementById('p-container');
+        cont.innerHTML = DATA.map(i => `
+            <div class="p-card" id="c-${i.id}" onclick="pick('${i.id}')">
+                <img src="https://telegram.org/img/tgstars.png" class="p-img">
+                <div class="fw-bold">${i.n} Stars</div>
+                <div class="small text-secondary">${i.p.toLocaleString()} s</div>
             </div>
         `).join('');
     }
 
-    function verifyAccount() {
-        if(!state.user) {
-            tg.showAlert("Telegram orqali kiring!");
-            return;
-        }
+    function pick(id) {
+        selected = DATA.find(x => x.id === id);
+        document.querySelectorAll('.p-card').forEach(el => el.classList.remove('active'));
+        document.getElementById('c-' + id).classList.add('active');
         
-        // Simulyatsiya qilingan tasdiqlash jarayoni
-        const btn = document.getElementById('verify-btn');
-        btn.innerText = "TEKSHIRILMOQDA...";
-        btn.disabled = true;
-
-        setTimeout(() => {
-            state.isVerified = true;
-            localStorage.setItem('tg_store_verified', 'true');
-            updateVerificationUI();
-            tg.HapticFeedback.notificationOccurred('success');
-        }, 1500);
+        const b = document.getElementById('buy-btn');
+        b.disabled = false;
+        b.innerText = `SOTIB OLISH: ${selected.p.toLocaleString()} S`;
+        tg.HapticFeedback.impactOccurred('light');
     }
 
-    function updateVerificationUI() {
-        if(state.isVerified) {
-            document.getElementById('verify-badge').className = 'verify-badge badge-verified';
-            document.getElementById('verify-badge').innerText = 'VERIFIED';
-            document.getElementById('verify-text').innerText = 'Sizning hisobingiz tasdiqlandi';
-            document.getElementById('verify-btn').style.display = 'none';
-            document.getElementById('target-id').disabled = false;
-            document.getElementById('main-action-btn').innerText = 'PAKET TANLANG';
-            
-            // Unlock products
-            document.querySelectorAll('.product-card').forEach(el => el.classList.add('unlocked'));
-            loadHistory();
-        }
-    }
+    function sendOrder() {
+        const target = document.getElementById('target-user').value;
+        if(!target) return tg.showAlert("Usernameni kiriting!");
 
-    function selectProduct(id) {
-        if(!state.isVerified) return;
-        
-        state.selectedProduct = PRODUCTS.find(p => p.id === id);
-        document.querySelectorAll('.product-card').forEach(el => el.classList.remove('selected'));
-        document.getElementById(`card-${id}`).classList.add('selected');
-        
-        const mainBtn = document.getElementById('main-action-btn');
-        mainBtn.disabled = false;
-        mainBtn.innerText = `SOTIB OLISH: ${state.selectedProduct.price.toLocaleString()} SO'M`;
-        tg.HapticFeedback.impactOccurred('medium');
-    }
-
-    function processCheckout() {
-        const target = document.getElementById('target-id').value;
-        if(!target) {
-            tg.showPopup({ message: "Qabul qiluvchini kiriting!" });
-            return;
-        }
-
-        const orderId = "TG-" + Date.now();
-        const data = {
-            orderId: orderId,
-            userId: state.user ? state.user.id : 0,
-            userName: state.user ? state.user.first_name : "Guest",
-            product: state.selectedProduct.stars + " Stars",
-            price: state.selectedProduct.price,
+        const oid = "TG-" + Date.now();
+        db.ref('orders/' + oid).set({
+            userId: user.id,
+            userName: user.first_name,
+            product: selected.n + " Stars",
+            price: selected.p,
             target: target,
             status: 'pending',
             createdAt: firebase.database.ServerValue.TIMESTAMP
-        };
-
-        db.ref('orders/' + orderId).set(data).then(() => {
-            document.getElementById('success-modal').style.display = 'flex';
-            tg.HapticFeedback.notificationOccurred('success');
+        }).then(() => {
+            tg.showPopup({
+                title: 'Qabul qilindi!',
+                message: 'To\'lov uchun Click ilovasiga o\'ting.',
+                buttons: [{text: 'OK', type: 'destructive'}]
+            }, () => {
+                tg.openLink("https://my.click.uz/clickp2p/30325C351A3F7F8C133EC334D17080FB834F5478346C01564BA3C310DA04F48F");
+            });
         });
     }
 
-    function closeModal() {
-        document.getElementById('success-modal').style.display = 'none';
-        // Click ilovasiga yo'naltirish
-        const clickLink = "https://my.click.uz/clickp2p/30325C351A3F7F8C133EC334D17080FB834F5478346C01564BA3C310DA04F48F";
-        if(tg.openLink) tg.openLink(clickLink);
-        else window.location.href = clickLink;
-    }
+    function loadMyOrders() {
+        db.ref('orders').orderByChild('userId').equalTo(user.id).on('value', snap => {
+            const data = snap.val();
+            const box = document.getElementById('my-orders');
+            if(!data) return box.innerHTML = "<p class='small text-secondary'>Hali buyurtmalar yo'q</p>";
 
-    function loadHistory() {
-        if(!state.user) return;
-        
-        db.ref('orders').orderByChild('userId').equalTo(state.user.id).on('value', snap => {
-            const history = snap.val();
-            const list = document.getElementById('history-list');
-            
-            if(!history) return;
-            
-            const html = Object.values(history).reverse().map(o => `
-                <div class="history-item">
-                    <div>
-                        <div class="fw-bold small">${o.product}</div>
-                        <div class="small text-secondary">@${o.target}</div>
-                    </div>
-                    <div class="text-end">
-                        <div class="status-text status-${o.status}">${o.status}</div>
-                        <div class="small text-secondary" style="font-size: 10px;">${new Date(o.createdAt).toLocaleDateString()}</div>
-                    </div>
+            box.innerHTML = Object.values(data).reverse().map(o => `
+                <div class="d-flex justify-content-between border-bottom border-secondary py-2">
+                    <span class="small">${o.product} (@${o.target})</span>
+                    <span class="small fw-bold text-uppercase" style="color:${o.status==='done'?'#32D74B':'#FFD60A'}">${o.status}</span>
                 </div>
             `).join('');
-            list.innerHTML = html;
         });
-    }
-
-    function checkLocalSession() {
-        if(localStorage.getItem('tg_store_verified') === 'true') {
-            state.isVerified = true;
-            updateVerificationUI();
-        }
     }
 </script>
 
