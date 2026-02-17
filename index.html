@@ -3,394 +3,378 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Yban Premium | Digital Services</title>
+    <title>Yban Stars | Future Store</title>
 
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #0088cc;
-            --primary-dark: #006699;
-            --bg-dark: #0a0b10;
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --accent-gradient: linear-gradient(135deg, #0088cc 0%, #00c6ff 100%);
+            --tg-theme-bg: #0a0c12;
+            --tg-theme-accent: #0088cc;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.07);
+            --neon-blue: #00d2ff;
+            --neon-purple: #9d50bb;
             --pending: #f1c40f;
-            --approved: #3498db;
-            --done: #2ecc71;
-            --rejected: #e74c3c;
+            --approved: #00d2ff;
+            --done: #00ff88;
+            --rejected: #ff4b2b;
         }
 
         body {
-            background-color: var(--bg-dark);
+            background-color: var(--tg-theme-bg);
             color: #ffffff;
             font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0; padding: 0;
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
         }
 
-        /* Background Glows */
-        .bg-glow {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
-            background: radial-gradient(circle at 10% 20%, rgba(0, 136, 204, 0.15) 0%, transparent 40%),
-                        radial-gradient(circle at 90% 80%, rgba(0, 198, 255, 0.1) 0%, transparent 40%);
-        }
-
-        .container-main { max-width: 480px; margin: 0 auto; min-height: 100vh; position: relative; }
-
-        /* Login Screen */
-        .auth-wrapper {
-            height: 100vh; display: flex; flex-direction: column; 
-            align-items: center; justify-content: center; padding: 30px;
-        }
-        .auth-card {
-            background: var(--card-bg); backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border); border-radius: 35px;
-            padding: 40px 30px; width: 100%; text-align: center;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-        }
-
-        /* App UI Components */
-        .app-header {
-            padding: 30px 20px; background: rgba(255,255,255,0.02);
-            backdrop-filter: blur(10px); border-bottom: 1px solid var(--glass-border);
-            border-radius: 0 0 30px 30px; margin-bottom: 25px;
-        }
-        .user-avatar {
-            width: 55px; height: 55px; border-radius: 18px; 
-            border: 2px solid var(--primary); padding: 2px;
-        }
-
-        /* Product Cards */
-        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .product-card {
-            background: var(--card-bg); border: 1px solid var(--glass-border);
-            border-radius: 24px; padding: 20px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative; overflow: hidden; cursor: pointer;
-        }
-        .product-card:hover { border-color: var(--primary); transform: translateY(-5px); }
-        .product-card.active {
-            background: rgba(0, 136, 204, 0.1); border-color: var(--primary);
-            box-shadow: 0 10px 30px rgba(0, 136, 204, 0.2);
-        }
-        .product-card.active::after {
-            content: "\f058"; font-family: "Font Awesome 6 Free"; font-weight: 900;
-            position: absolute; top: 10px; right: 10px; color: var(--primary);
-        }
-        .stars-img { width: 45px; margin-bottom: 12px; filter: drop-shadow(0 5px 15px rgba(255,215,0,0.3)); }
-        .price-tag { font-size: 0.85rem; color: #aaa; margin-top: 5px; }
-
-        /* Input Field */
-        .premium-input-box {
-            background: var(--card-bg); border-radius: 24px; padding: 20px;
-            margin: 25px 0; border: 1px solid var(--glass-border);
-        }
-        .custom-input {
-            background: rgba(0,0,0,0.2) !important; border: 1px solid var(--glass-border) !important;
-            color: #fff !important; border-radius: 14px; padding: 12px 15px;
-        }
-        .custom-input:focus { border-color: var(--primary) !important; box-shadow: none !important; }
-
-        /* Order History */
-        .history-card {
-            background: var(--card-bg); border-radius: 20px; padding: 15px;
-            margin-bottom: 15px; border-left: 4px solid var(--primary);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .status-badge {
-            padding: 6px 12px; border-radius: 10px; font-size: 0.65rem;
-            font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
-        }
-        .badge-pending { background: rgba(241, 196, 15, 0.15); color: var(--pending); }
-        .badge-approved { background: rgba(52, 152, 219, 0.15); color: var(--approved); }
-        .badge-done { background: rgba(46, 204, 113, 0.15); color: var(--done); }
-        .badge-rejected { background: rgba(231, 76, 60, 0.15); color: var(--rejected); }
-
-        /* Sticky Bottom Navbar */
-        .bottom-action {
-            position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 480px; background: rgba(10, 11, 16, 0.8);
-            backdrop-filter: blur(20px); padding: 20px; border-top: 1px solid var(--glass-border);
-            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
-        }
-        .btn-buy {
-            background: var(--accent-gradient); color: #fff; border: none;
-            padding: 15px 35px; border-radius: 18px; font-weight: 800;
-            box-shadow: 0 10px 25px rgba(0, 136, 204, 0.4);
-            transition: 0.3s;
-        }
-        .btn-buy:active { transform: scale(0.95); }
-
-        /* Loader */
-        .loader-overlay {
+        /* Ambient Background Shadows */
+        .ambient-glow {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--bg-dark); z-index: 9999; display: flex; align-items: center; justify-content: center;
+            background: radial-gradient(circle at 50% -20%, rgba(0, 136, 204, 0.15), transparent 60%),
+                        radial-gradient(circle at -10% 100%, rgba(157, 80, 187, 0.1), transparent 50%);
+            z-index: -1;
         }
+
+        .app-container { max-width: 500px; margin: 0 auto; min-height: 100vh; padding-bottom: 120px; }
+
+        /* Login Glass Card */
+        .auth-screen {
+            height: 100vh; display: flex; align-items: center; justify-content: center; padding: 25px;
+        }
+        .cyber-card {
+            background: var(--glass); backdrop-filter: blur(30px);
+            border: 1px solid var(--glass-border); border-radius: 40px;
+            padding: 40px 30px; width: 100%; text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+        }
+
+        /* Glass Header */
+        .smart-header {
+            padding: 25px 20px; background: rgba(0,0,0,0.2); backdrop-filter: blur(15px);
+            border-bottom: 1px solid var(--glass-border); border-radius: 0 0 30px 30px;
+            margin-bottom: 25px;
+        }
+        .user-pill {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            padding: 8px 15px; border-radius: 20px; display: flex; align-items: center; gap: 10px;
+        }
+        .user-pill img { width: 35px; height: 35px; border-radius: 12px; border: 1px solid var(--neon-blue); }
+
+        /* Stars Selector Grid */
+        .stars-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 15px; }
+        .star-item {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 28px; padding: 25px 15px; text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative; cursor: pointer; overflow: hidden;
+        }
+        .star-item::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            opacity: 0; transition: 0.3s; z-index: 0;
+        }
+        .star-item.active { border-color: var(--neon-blue); transform: scale(1.03); background: rgba(0, 136, 204, 0.1); }
+        .star-item.active::before { opacity: 0.05; }
+        .star-item * { position: relative; z-index: 1; }
+        .star-item img { width: 50px; margin-bottom: 12px; filter: drop-shadow(0 0 10px rgba(255,215,0,0.3)); }
+        .star-qty { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700; display: block; }
+        .star-price { font-size: 0.8rem; color: #888; font-weight: 600; letter-spacing: 0.5px; }
+
+        /* Custom Input */
+        .glass-input-wrapper {
+            background: var(--glass); border: 1px solid var(--glass-border);
+            border-radius: 25px; padding: 20px; margin: 20px 15px;
+        }
+        .glass-input {
+            background: rgba(0,0,0,0.2) !important; border: 1px solid var(--glass-border) !important;
+            color: #fff !important; border-radius: 15px; padding: 12px 18px; font-weight: 600;
+        }
+
+        /* Order Tracker Stepper */
+        .order-history-card {
+            background: var(--glass); border-radius: 25px; padding: 20px;
+            margin: 15px; border: 1px solid var(--glass-border);
+        }
+        .stepper { display: flex; justify-content: space-between; position: relative; margin-top: 15px; }
+        .step-node {
+            width: 10px; height: 10px; border-radius: 50%; background: #333;
+            position: relative; z-index: 2;
+        }
+        .step-node.active { background: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
+        .stepper-line {
+            position: absolute; top: 4px; left: 0; width: 100%; height: 2px;
+            background: #333; z-index: 1;
+        }
+        .stepper-line-fill { height: 100%; background: var(--neon-blue); transition: 0.5s; }
+
+        /* Bottom Floating Bar */
+        .floating-footer {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 450px; background: rgba(15, 17, 26, 0.8);
+            backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
+            border-radius: 30px; padding: 20px; display: flex;
+            justify-content: space-between; align-items: center; z-index: 1000;
+        }
+        .buy-btn {
+            background: linear-gradient(135deg, #0088cc 0%, #00d2ff 100%);
+            border: none; color: white; padding: 14px 35px; border-radius: 20px;
+            font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+            box-shadow: 0 10px 20px rgba(0, 136, 204, 0.3); transition: 0.3s;
+        }
+        .buy-btn:active { transform: scale(0.95); opacity: 0.9; }
+
+        /* Utility */
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+            background-size: 200% 100%; animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
     </style>
 </head>
 <body>
 
-<div class="bg-glow"></div>
+<div class="ambient-glow"></div>
 
-<div id="app-loader" class="loader-overlay">
-    <div class="text-center">
-        <div class="spinner-border text-primary" role="status"></div>
-        <p class="mt-3 opacity-50">Yuklanmoqda...</p>
-    </div>
-</div>
-
-<div class="container-main">
-
-    <div id="view-auth" class="auth-wrapper animate__animated animate__fadeIn" style="display: none;">
-        <div class="auth-card">
-            <div class="mb-4">
-                <i class="fab fa-telegram fa-4x text-primary mb-3"></i>
-                <h3 class="fw-800">Yban Premium</h3>
-                <p class="text-muted small">Bizning xizmatlardan foydalanish uchun Telegram orqali kiring</p>
+<div class="app-container">
+    
+    <div id="auth-view" class="auth-screen animate__animated animate__fadeIn">
+        <div class="cyber-card">
+            <div class="mb-5">
+                <div class="position-relative d-inline-block">
+                    <i class="fab fa-telegram fa-5x text-info mb-4"></i>
+                    <div class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">2026</div>
+                </div>
+                <h2 class="fw-800" style="letter-spacing: -1px;">YBAN PREMIUM</h2>
+                <p class="text-muted small px-3">Stars va Telegram xizmatlari dunyosiga xush kelibsiz. Davom etish uchun botni tasdiqlang.</p>
             </div>
             
-            <div id="tg-widget-container">
-                </div>
+            <a href="https://t.me/starsuz_authbot" target="_blank" class="buy-btn w-100 text-decoration-none d-block">
+                <i class="fab fa-telegram-plane me-2"></i> BOTNI UYGO'TISH
+            </a>
             
-            <p class="mt-4 small text-muted">Xavfsiz va rasmiy Telegram login</p>
+            <div class="mt-4 p-3 rounded-4" style="background: rgba(0,0,0,0.2); border: 1px dashed #333;">
+                <p class="small text-muted mb-0">Botga <b>/start</b> yozib, qaytib kelganingizda do'kon avtomatik ochiladi.</p>
+            </div>
         </div>
     </div>
 
-    <div id="view-app" style="display: none;">
-        <header class="app-header d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center gap-3">
-                <img id="user-pfp" src="" class="user-avatar">
-                <div>
-                    <h6 id="user-display-name" class="mb-0 fw-bold">...</h6>
-                    <small id="user-tag" class="text-muted">@username</small>
+    <div id="store-view" style="display: none;">
+        <header class="smart-header d-flex justify-content-between align-items-center">
+            <div class="user-pill">
+                <img id="u-pfp" src="">
+                <div class="lh-1">
+                    <div id="u-name" class="fw-bold small text-white">...</div>
+                    <small id="u-handle" class="text-muted" style="font-size: 0.6rem;">@username</small>
                 </div>
             </div>
-            <button class="btn btn-link text-muted" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+            <div class="text-end">
+                <div class="small fw-bold text-info" id="bonus-points">0 PTS</div>
+                <div class="text-muted" style="font-size: 0.5rem; text-transform: uppercase;">Loyalty Bonus</div>
+            </div>
         </header>
 
         <div class="px-3">
-            <h5 class="fw-bold mb-3"><i class="fas fa-gem text-primary me-2"></i> Paketlar</h5>
-            
-            <div class="grid-container" id="product-grid">
-                </div>
-
-            <div class="premium-input-box animate__animated animate__fadeInUp">
-                <label class="small fw-bold mb-3 text-uppercase text-muted">Ma'lumotlar</label>
-                <div class="input-group mb-0">
-                    <span class="input-group-text bg-transparent border-0 text-primary">@</span>
-                    <input type="text" id="target-id" class="form-control custom-input" placeholder="Telegram Username">
-                </div>
-                <small class="text-muted mt-2 d-block px-1" style="font-size: 0.7rem;">
-                    * Premium yuboriladigan foydalanuvchi nomini yozing.
-                </small>
+            <div class="d-flex justify-content-between align-items-end mb-3 px-2">
+                <h6 class="fw-800 mb-0 opacity-50">STARS PAKETLARI</h6>
+                <span class="badge bg-primary rounded-pill" style="font-size: 0.6rem;">BEST PRICE</span>
             </div>
 
-            <div class="mb-5">
-                <h5 class="fw-bold mb-4"><i class="fas fa-history text-primary me-2"></i> Buyurtmalar Tarixi</h5>
-                <div id="order-history-list">
+            <div class="stars-grid" id="stars-list">
+                </div>
+
+            <div class="glass-input-wrapper animate__animated animate__fadeInUp">
+                <label class="small fw-800 text-muted mb-3 text-uppercase"><i class="fas fa-at me-1"></i> Qabul qiluvchi</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-transparent border-0 text-info">@</span>
+                    <input type="text" id="target-id" class="form-control glass-input" placeholder="username">
+                </div>
+            </div>
+
+            <div class="px-2 mt-4">
+                <h6 class="fw-800 mb-3 opacity-50">BUYURTMA HOLATI</h6>
+                <div id="live-tracking">
                     </div>
             </div>
         </div>
 
-        <div class="bottom-action animate__animated animate__slideInUp">
+        <div class="floating-footer animate__animated animate__slideInUp">
             <div>
-                <small class="text-muted d-block fw-bold small">TO'LOV:</small>
-                <h4 id="display-price" class="mb-0 fw-800 text-white">0 so'm</h4>
+                <div class="total-label text-muted fw-bold" style="font-size: 0.6rem; letter-spacing: 1px;">TOTAL AMOUNT</div>
+                <h3 id="display-total" class="mb-0 fw-800 text-white">0 s</h3>
             </div>
-            <button class="btn-buy" onclick="handleCheckout()">SOTIB OLISH</button>
+            <button class="buy-btn" onclick="startOrderProcess()">
+                BUY NOW <i class="fas fa-bolt ms-2"></i>
+            </button>
         </div>
     </div>
 
 </div>
 
 <script>
-    // -----------------------------------------------------------------
-    // 1. FIREBASE ARCHITECTURE
-    // -----------------------------------------------------------------
+    // --- 1. CORE CONFIG ---
     const firebaseConfig = {
         apiKey: "AIzaSyDgMXCfXW_I70t0m-pZhfi7HTbiCBB70dg",
-        authDomain: "tgstars-29ae3.firebaseapp.com",
         databaseURL: "https://tgstars-29ae3-default-rtdb.firebaseio.com",
         projectId: "tgstars-29ae3",
-        appId: "1:1031854102638:web:8da862f0ddbf0f3421ae7f"
     };
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
+    const db = firebase.database();
+    const tg = window.Telegram.WebApp;
 
-    // -----------------------------------------------------------------
-    // 2. PRODUCT CONFIGURATION
-    // -----------------------------------------------------------------
-    const PRODUCTS = [
-        { id: 'stars_50', label: '50 Stars', price: 15000, img: 'https://telegram.org/img/tgstars.png' },
-        { id: 'stars_100', label: '100 Stars', price: 29000, img: 'https://telegram.org/img/tgstars.png' },
-        { id: 'stars_250', label: '250 Stars', price: 69000, img: 'https://telegram.org/img/tgstars.png' },
-        { id: 'stars_500', label: '500 Stars', price: 135000, img: 'https://telegram.org/img/tgstars.png' },
-        { id: 'stars_1000', label: '1000 Stars', price: 265000, img: 'https://telegram.org/img/tgstars.png' },
-        { id: 'stars_2500', label: '2500 Stars', price: 650000, img: 'https://telegram.org/img/tgstars.png' }
+    const STARS_DATA = [
+        { id: 's50', qty: 50, price: 15000, bonus: 10 },
+        { id: 's100', qty: 100, price: 29000, bonus: 25 },
+        { id: 's250', qty: 250, price: 69000, bonus: 70 },
+        { id: 's500', qty: 500, price: 135000, bonus: 150 },
+        { id: 's1000', qty: 1000, price: 265000, bonus: 350 },
+        { id: 's2500', qty: 2500, price: 650000, bonus: 1000 }
     ];
 
-    let currentSession = {
+    let state = {
         user: null,
-        selectedProduct: null,
-        target: ''
+        selected: null,
+        trackingOrders: []
     };
 
-    // -----------------------------------------------------------------
-    // 3. CORE LOGIC & WIDGET EMBED
-    // -----------------------------------------------------------------
-    window.onload = function() {
-        checkSession();
-        injectWidget();
+    // --- 2. AUTH ENGINE ---
+    window.onload = () => {
+        tg.expand();
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            initApp(tg.initDataUnsafe.user);
+        } else {
+            const cached = localStorage.getItem('yban_session_v2');
+            if(cached) initApp(JSON.parse(cached));
+            else document.getElementById('auth-view').style.display = 'flex';
+        }
     };
 
-    function injectWidget() {
-        const container = document.getElementById('tg-widget-container');
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = "https://telegram.org/js/telegram-widget.js?22";
-        script.setAttribute('data-telegram-login', 'starsuz_authbot'); // @BotFather domain ulanishi kerak
-        script.setAttribute('data-size', 'large');
-        script.setAttribute('data-radius', '15');
-        script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-        container.appendChild(script);
-    }
-
-    // Global callback for Telegram Widget
-    window.onTelegramAuth = function(user) {
-        currentSession.user = user;
-        localStorage.setItem('yban_user', JSON.stringify(user));
-        toggleView('view-app');
-        initUserUI();
-    };
-
-    function checkSession() {
-        const saved = localStorage.getItem('yban_user');
-        setTimeout(() => {
-            document.getElementById('app-loader').style.display = 'none';
-            if (saved) {
-                currentSession.user = JSON.parse(saved);
-                toggleView('view-app');
-                initUserUI();
-            } else {
-                toggleView('view-auth');
-            }
-        }, 1200);
-    }
-
-    function initUserUI() {
-        const u = currentSession.user;
-        document.getElementById('user-pfp').src = u.photo_url || 'https://via.placeholder.com/100';
-        document.getElementById('user-display-name').innerText = u.first_name;
-        document.getElementById('user-tag').innerText = `@${u.username || 'user_' + u.id}`;
+    function initApp(userData) {
+        state.user = userData;
+        localStorage.setItem('yban_session_v2', JSON.stringify(userData));
         
-        renderProducts();
+        document.getElementById('auth-view').style.display = 'none';
+        document.getElementById('store-view').style.display = 'block';
+        
+        document.getElementById('u-pfp').src = userData.photo_url || `https://ui-avatars.com/api/?name=${userData.first_name}&background=0088cc&color=fff`;
+        document.getElementById('u-name').innerText = userData.first_name;
+        document.getElementById('u-handle').innerText = "@" + (userData.username || userData.id);
+        
+        renderUI();
         syncOrders();
     }
 
-    function renderProducts() {
-        const container = document.getElementById('product-grid');
-        container.innerHTML = PRODUCTS.map(p => `
-            <div class="product-card" id="card-${p.id}" onclick="selectProduct('${p.id}')">
-                <img src="${p.img}" class="stars-img">
-                <div class="fw-bold">${p.label}</div>
-                <div class="price-tag">${p.price.toLocaleString()} so'm</div>
+    // --- 3. UI GENERATORS ---
+    function renderUI() {
+        const grid = document.getElementById('stars-list');
+        grid.innerHTML = STARS_DATA.map(s => `
+            <div class="star-item" id="card-${s.id}" onclick="selectProduct('${s.id}')">
+                <img src="https://telegram.org/img/tgstars.png">
+                <span class="star-qty">${s.qty}</span>
+                <span class="star-price">${s.price.toLocaleString()} s</span>
+                <div class="mt-2" style="font-size: 0.5rem; color: #00ff88;">+${s.bonus} PTS</div>
             </div>
         `).join('');
     }
 
     function selectProduct(id) {
-        currentSession.selectedProduct = PRODUCTS.find(p => p.id === id);
-        document.querySelectorAll('.product-card').forEach(c => c.classList.remove('active'));
+        state.selected = STARS_DATA.find(x => x.id === id);
+        document.querySelectorAll('.star-item').forEach(c => c.classList.remove('active'));
         document.getElementById(`card-${id}`).classList.add('active');
-        document.getElementById('display-price').innerText = currentSession.selectedProduct.price.toLocaleString() + ' so\'m';
+        document.getElementById('display-total').innerText = state.selected.price.toLocaleString() + " s";
+        document.getElementById('bonus-points').innerText = "+" + state.selected.bonus + " PTS";
+        
+        if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     }
 
-    // -----------------------------------------------------------------
-    // 4. FIREBASE OPERATIONS
-    // -----------------------------------------------------------------
-    async function handleCheckout() {
+    // --- 4. ORDER & TRACKING ---
+    async function startOrderProcess() {
         const target = document.getElementById('target-id').value;
-        if (!currentSession.selectedProduct) return alert('Iltimos, paket tanlang!');
-        if (!target) return alert('Username kiriting!');
+        if(!state.selected || !target) {
+            tg.showAlert ? tg.showAlert("Ma'lumotlar to'liq emas!") : alert("Xatolik!");
+            return;
+        }
 
-        const orderId = "ORD-" + Date.now().toString(36).toUpperCase();
+        const oid = "YB-" + Math.random().toString(36).substr(2, 7).toUpperCase();
         const orderData = {
-            orderId: orderId,
-            userId: currentSession.user.id,
-            target: target,
-            productId: currentSession.selectedProduct.id,
-            productLabel: currentSession.selectedProduct.label,
-            price: currentSession.selectedProduct.price,
+            orderId: oid,
+            userId: state.user.id,
+            userName: state.user.first_name,
+            productLabel: state.selected.qty + " Stars",
+            price: state.selected.price,
+            target: target.replace('@', ''),
             status: 'pending',
             createdAt: firebase.database.ServerValue.TIMESTAMP
         };
 
         try {
-            await database.ref('orders/' + orderId).set(orderData);
-            // Click P2P link Integration
-            window.location.href = "https://my.click.uz/clickp2p/30325C351A3F7F8C133EC334D17080FB834F5478346C01564BA3C310DA04F48F";
-        } catch (error) {
-            console.error("Firebase Error:", error);
-            alert("Xatolik yuz berdi. Qayta urinib ko'ring.");
-        }
+            await db.ref('orders/' + oid).set(orderData);
+            triggerConfetti();
+            setTimeout(() => {
+                window.location.href = "https://my.click.uz/clickp2p/30325C351A3F7F8C133EC334D17080FB834F5478346C01564BA3C310DA04F48F";
+            }, 1000);
+        } catch(e) { console.error(e); }
     }
 
     function syncOrders() {
-        const historyList = document.getElementById('order-history-list');
-        const userRef = database.ref('orders').orderByChild('userId').equalTo(currentSession.user.id);
+        db.ref('orders').orderByChild('userId').equalTo(state.user.id).on('value', snap => {
+            const orders = snap.val();
+            const container = document.getElementById('live-tracking');
+            if(!orders) return container.innerHTML = "<p class='small text-muted text-center py-4'>Sizda hali buyurtmalar yo'q</p>";
 
-        userRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            if (!data) {
-                historyList.innerHTML = '<div class="text-center opacity-50 py-4 small">Buyurtmalar mavjud emas</div>';
-                return;
-            }
-
-            const sorted = Object.values(data).sort((a, b) => b.createdAt - a.createdAt);
-            
-            historyList.innerHTML = sorted.map(order => `
-                <div class="history-card animate__animated animate__fadeIn">
-                    <div>
-                        <div class="fw-bold small">${order.productLabel}</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">@${order.target}</div>
+            const sorted = Object.values(orders).sort((a,b) => b.createdAt - a.createdAt);
+            container.innerHTML = sorted.map(o => {
+                const prog = getProgress(o.status);
+                return `
+                <div class="order-history-card animate__animated animate__fadeIn">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="fw-bold small text-info">${o.productLabel}</span>
+                        <span class="small fw-800" style="color: var(--${o.status})">${o.status.toUpperCase()}</span>
                     </div>
-                    <div class="text-end">
-                        <div class="status-badge badge-${order.status}">${getStatusName(order.status)}</div>
-                        <div class="mt-1 fw-bold" style="font-size: 0.8rem;">${order.price.toLocaleString()} s</div>
+                    <div class="stepper">
+                        <div class="stepper-line"><div class="stepper-line-fill" style="width: ${prog}%"></div></div>
+                        <div class="step-node active"></div>
+                        <div class="step-node ${prog >= 33 ? 'active' : ''}"></div>
+                        <div class="step-node ${prog >= 66 ? 'active' : ''}"></div>
+                        <div class="step-node ${prog == 100 ? 'active' : ''}"></div>
                     </div>
-                </div>
-            `).join('');
+                    <div class="d-flex justify-content-between mt-2" style="font-size: 0.5rem; opacity: 0.5;">
+                        <span>ORDERED</span>
+                        <span>CHECKING</span>
+                        <span>SENDING</span>
+                        <span>DONE</span>
+                    </div>
+                    <div class="mt-3 small text-muted">Target: @${o.target}</div>
+                </div>`;
+            }).join('');
         });
     }
 
-    // -----------------------------------------------------------------
-    // 5. HELPER UTILS
-    // -----------------------------------------------------------------
-    function getStatusName(status) {
-        const mapping = {
-            'pending': 'Kutilmoqda',
-            'approved': 'Tasdiqlandi',
-            'done': 'Bajarildi',
-            'rejected': 'Bekor qilindi'
-        };
-        return mapping[status] || status;
+    // --- 5. HELPERS ---
+    function getProgress(status) {
+        if(status === 'pending') return 10;
+        if(status === 'approved') return 45;
+        if(status === 'done') return 100;
+        if(status === 'rejected') return 0;
+        return 0;
     }
 
-    function toggleView(viewId) {
-        document.getElementById('view-auth').style.display = 'none';
-        document.getElementById('view-app').style.display = 'none';
-        document.getElementById(viewId).style.display = 'block';
-    }
-
-    function logout() {
-        localStorage.removeItem('yban_user');
-        location.reload();
+    function triggerConfetti() {
+        confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ['#0088cc', '#00d2ff', '#ffffff']
+        });
     }
 </script>
 
