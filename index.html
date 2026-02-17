@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Premium Store | Pro Version</title>
+    <title>Premium & Stars Store</title>
     
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
@@ -15,80 +15,49 @@
         :root {
             --tg-blue: #24A1DE;
             --tg-bg: #f5f8fa;
-            --card-shadow: 0 10px 30px rgba(0,0,0,0.08);
             --pending: #ffc107;
             --approved: #0dcaf0;
             --done: #198754;
             --rejected: #dc3545;
         }
 
-        body { background-color: var(--tg-bg); font-family: 'Segoe UI', Roboto, sans-serif; color: #333; margin: 0; }
-        .app-shell { max-width: 500px; margin: 0 auto; min-height: 100vh; background: white; position: relative; padding-bottom: 100px; }
+        body { background-color: var(--tg-bg); font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; }
+        .app-shell { max-width: 500px; margin: 0 auto; min-height: 100vh; background: white; position: relative; padding-bottom: 110px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
         
-        /* Header */
         .app-header {
             background: linear-gradient(135deg, #1c82b6 0%, #24A1DE 100%);
             padding: 40px 20px; border-radius: 0 0 35px 35px; color: white;
-            box-shadow: 0 10px 25px rgba(36, 161, 222, 0.3);
         }
-        .profile-section { display: flex; align-items: center; gap: 15px; }
-        .avatar-circle { width: 55px; height: 55px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); object-fit: cover; }
 
-        /* Service Selector */
-        .service-tabs { display: flex; background: #f0f2f5; border-radius: 15px; padding: 5px; margin: 25px 0; }
-        .s-tab { flex: 1; text-align: center; padding: 12px; border-radius: 12px; cursor: pointer; transition: 0.3s; font-weight: 700; color: #777; }
-        .s-tab.active { background: white; color: var(--tg-blue); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .avatar-circle { width: 55px; height: 55px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.3); }
 
-        /* Product Cards */
-        .stars-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        /* Service Cards */
+        .stars-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 10px 0; }
         .p-card {
-            background: white; border: 2px solid #f0f2f5; border-radius: 20px; padding: 15px;
-            text-align: center; transition: 0.3s; position: relative; overflow: hidden;
+            background: white; border: 2px solid #f0f2f5; border-radius: 18px; padding: 15px;
+            text-align: center; transition: 0.2s; cursor: pointer;
         }
         .p-card.active { border-color: var(--tg-blue); background: #f0f9ff; transform: scale(1.02); }
-        .p-card img { width: 45px; margin-bottom: 10px; }
-        .p-amount { font-size: 1.3rem; font-weight: 800; display: block; color: #222; }
-        .p-price { font-size: 0.9rem; font-weight: 600; color: var(--tg-blue); }
+        .p-card img { width: 40px; margin-bottom: 8px; }
+        .p-amount { font-size: 1.2rem; font-weight: 800; display: block; }
+        .p-price { font-size: 0.85rem; color: var(--tg-blue); font-weight: 700; }
 
-        /* Order Form */
-        .form-box { background: #f9f9f9; border-radius: 20px; padding: 20px; margin-top: 25px; }
-        .tg-input { 
-            background: white; border: 2px solid #eee; border-radius: 15px; padding: 12px 15px;
-            width: 100%; outline: none; transition: 0.3s; font-weight: 600;
-        }
-        .tg-input:focus { border-color: var(--tg-blue); box-shadow: 0 0 0 4px rgba(36,161,222,0.1); }
-
-        /* Order Item & Statuses */
-        .order-history { margin-top: 30px; }
-        .h-item {
-            background: white; border: 1px solid #eee; border-radius: 18px; padding: 15px;
-            margin-bottom: 15px; box-shadow: var(--card-shadow);
-        }
-        .status-pill {
-            font-size: 0.7rem; font-weight: 800; padding: 4px 12px; border-radius: 20px;
-            text-transform: uppercase; letter-spacing: 0.5px;
-        }
+        /* Statuses */
+        .h-item { background: white; border: 1px solid #eee; border-radius: 15px; padding: 12px; margin-bottom: 10px; }
+        .status-pill { font-size: 0.65rem; font-weight: 800; padding: 4px 10px; border-radius: 10px; text-transform: uppercase; }
         .s-pending { background: rgba(255,193,7,0.15); color: #b88600; }
         .s-approved { background: rgba(13,202,240,0.15); color: #087990; }
         .s-done { background: rgba(25,135,84,0.15); color: #0f5132; }
         .s-rejected { background: rgba(220,53,69,0.15); color: #842029; }
 
-        /* Footer Checkout */
         .checkout-footer {
             position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-            width: 100%; max-width: 500px; background: white; padding: 20px;
-            border-radius: 25px 25px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.1);
-            z-index: 1000; display: flex; justify-content: space-between; align-items: center;
-        }
-        .btn-checkout {
-            background: var(--tg-blue); color: white; border: none; padding: 14px 30px;
-            border-radius: 16px; font-weight: 700; transition: 0.3s; box-shadow: 0 4px 15px rgba(36,161,222,0.3);
+            width: 100%; max-width: 500px; background: white; padding: 15px 20px;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05); border-radius: 20px 20px 0 0;
+            display: flex; justify-content: space-between; align-items: center; z-index: 1000;
         }
 
-        #login-view { 
-            height: 100vh; display: flex; align-items: center; justify-content: center; 
-            text-align: center; background: white; padding: 30px;
-        }
+        #login-view { height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; }
     </style>
 </head>
 <body>
@@ -97,91 +66,62 @@
     
     <div id="login-view">
         <div class="animate__animated animate__fadeIn">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" width="100" class="mb-4">
-            <h1 class="fw-bold">Premium Store</h1>
-            <p class="text-muted mb-4">Rasmiy Telegram xizmatlari botiga xush kelibsiz. Davom etish uchun login qiling.</p>
-            <div id="tg-login-button"></div>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/82/Telegram_logo.svg" width="80" class="mb-4">
+            <h2 class="fw-bold">Yban Store</h2>
+            <p class="text-muted mb-4">Kirish uchun Telegram tasdiqnomasi kerak</p>
+            
+            <script async src="https://telegram.org/js/telegram-widget.js?22" 
+                    data-telegram-login="starsuz_authbot" 
+                    data-size="large" 
+                    data-onauth="onTelegramAuth(user)">
+            </script>
         </div>
     </div>
 
     <div id="app-view" style="display: none;">
-        <header class="app-header animate__animated animate__fadeInDown">
-            <div class="profile-section">
-                <img id="u-avatar" src="" class="avatar-circle shadow">
+        <header class="app-header">
+            <div class="d-flex align-items-center gap-3">
+                <img id="u-avatar" src="" class="avatar-circle">
                 <div>
-                    <h5 id="u-name" class="mb-0 fw-bold">...</h5>
+                    <h5 id="u-name" class="mb-0 fw-bold text-white">...</h5>
                     <small id="u-handle" class="opacity-75">@username</small>
                 </div>
             </div>
-            <div class="mt-4">
-                <h3 class="fw-bold mb-1">Xizmatlarni tanlang</h3>
-                <p class="small opacity-75">Hamyonbop va tezkor yetkazib berish</p>
-            </div>
         </header>
 
-        <div class="px-3">
-            <div class="service-tabs">
-                <div class="s-tab active" onclick="changeCategory('stars', this)">
-                    <i class="fas fa-gem me-2"></i>Stars
+        <div class="px-3 pt-3">
+            <h6 class="fw-bold text-muted text-uppercase small mb-3">Stars Paketlari</h6>
+            <div id="stars-list" class="stars-container">
                 </div>
-                <div class="s-tab" onclick="changeCategory('premium', this)">
-                    <i class="fas fa-star me-2"></i>Premium
+
+            <div class="mt-4 p-3 bg-light rounded-4">
+                <label class="small fw-bold mb-2">Qabul qiluvchi Username:</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0">@</span>
+                    <input type="text" id="target-user" class="form-control border-start-0 ps-0" placeholder="abdu_admin">
                 </div>
             </div>
 
-            <div id="stars-market" class="stars-container animate__animated animate__fadeIn">
-                </div>
-
-            <div id="premium-market" class="animate__animated animate__fadeIn" style="display: none;">
-                <div class="p-card w-100 active" onclick="selectProduct('premium', 'p1m', 42000)">
-                    <img src="https://telegram.org/img/premium/PremiumGift.png" style="width: 70px;">
-                    <span class="p-amount">1 Oylik Premium</span>
-                    <span class="text-muted d-block small mb-2">Sovg'a sifatida (Gift)</span>
-                    <span class="p-price">42,000 so'm</span>
-                </div>
-            </div>
-
-            <div class="form-box">
-                <div class="mb-3">
-                    <label class="small fw-bold text-muted mb-2 d-block text-uppercase">Qabul qiluvchi</label>
-                    <div class="position-relative">
-                        <span class="position-absolute top-50 translate-middle-y ms-3 fw-bold text-muted">@</span>
-                        <input type="text" id="target-user" class="tg-input ps-5" placeholder="username">
-                    </div>
-                </div>
-                <div class="mb-0">
-                    <label class="small fw-bold text-muted mb-2 d-block text-uppercase">To'lov usuli</label>
-                    <div class="p-3 border rounded-3 bg-white d-flex align-items-center justify-content-between">
-                        <span class="fw-bold"><i class="fas fa-credit-card me-2 text-primary"></i> Click P2P</span>
-                        <i class="fas fa-check-circle text-success"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="order-history pb-5">
-                <h5 class="fw-bold mb-3 d-flex justify-content-between">
-                    <span>Mening buyurtmalarim</span>
-                    <i class="fas fa-history text-muted"></i>
-                </h5>
-                <div id="history-list">
-                    </div>
+            <div class="mt-4">
+                <h6 class="fw-bold text-muted text-uppercase small mb-3">Buyurtmalar Tarixi</h6>
+                <div id="history-list"></div>
             </div>
         </div>
 
         <div class="checkout-footer">
             <div>
-                <small class="text-muted d-block small fw-bold">TO'LOV SUMMASI:</small>
-                <h4 id="total-price" class="mb-0 fw-800 color-dark">0 so'm</h4>
+                <small class="text-muted d-block fw-bold">JAMI:</small>
+                <h4 id="total-price" class="mb-0 fw-bold">0 so'm</h4>
             </div>
-            <button class="btn-checkout" onclick="processOrder()">
-                SOTIB OLISH <i class="fas fa-arrow-right ms-2"></i>
+            <button class="btn btn-primary px-4 py-2 fw-bold rounded-3" onclick="processOrder()">
+                SOTIB OLISH <i class="fas fa-chevron-right ms-2"></i>
             </button>
         </div>
     </div>
 </div>
 
 <script>
-    // --- FIREBASE CONFIG ---
+    // --- 1. FIREBASE INITIALIZE ---
     const firebaseConfig = {
         apiKey: "AIzaSyDgMXCfXW_I70t0m-pZhfi7HTbiCBB70dg",
         authDomain: "tgstars-29ae3.firebaseapp.com",
@@ -198,18 +138,15 @@
         { id: 's50', amount: 50, price: 15000 },
         { id: 's100', amount: 100, price: 29000 },
         { id: 's250', amount: 250, price: 69000 },
-        { id: 's500', amount: 500, price: 135000 },
-        { id: 's1000', amount: 1000, price: 265000 },
-        { id: 's2500', amount: 2500, price: 650000 }
+        { id: 's500', amount: 500, price: 135000 }
     ];
 
-    let currentCategory = 'stars';
     let selected = { id: null, price: 0 };
-    let user = null;
+    let currentUser = null;
 
-    // --- INITIALIZATION ---
-    function onTelegramAuth(tgUser) {
-        user = tgUser;
+    // --- 2. AUTH CALLBACK ---
+    function onTelegramAuth(user) {
+        currentUser = user;
         document.getElementById('login-view').style.display = 'none';
         document.getElementById('app-view').style.display = 'block';
         
@@ -221,10 +158,11 @@
         fetchHistory();
     }
 
+    // --- 3. UI FUNCTIONS ---
     function renderStars() {
-        const container = document.getElementById('stars-market');
+        const container = document.getElementById('stars-list');
         container.innerHTML = STARS_DATA.map(s => `
-            <div class="p-card ${selected.id === s.id ? 'active' : ''}" onclick="selectProduct('stars', '${s.id}', ${s.price})">
+            <div class="p-card ${selected.id === s.id ? 'active' : ''}" onclick="selectProduct('${s.id}', ${s.price})">
                 <img src="https://telegram.org/img/tgstars.png">
                 <span class="p-amount">${s.amount}</span>
                 <span class="p-price">${s.price.toLocaleString()} so'm</span>
@@ -232,38 +170,20 @@
         `).join('');
     }
 
-    function changeCategory(cat, el) {
-        currentCategory = cat;
-        document.querySelectorAll('.s-tab').forEach(t => t.classList.remove('active'));
-        el.classList.add('active');
-        
-        document.getElementById('stars-market').style.display = cat === 'stars' ? 'grid' : 'none';
-        document.getElementById('premium-market').style.display = cat === 'premium' ? 'block' : 'none';
-        
-        if(cat === 'premium') selectProduct('premium', 'p1m', 42000);
-        else { selected = { id: null, price: 0 }; renderStars(); updateFooter(); }
-    }
-
-    function selectProduct(type, id, price) {
+    function selectProduct(id, price) {
         selected = { id, price };
-        if(type === 'stars') renderStars();
-        updateFooter();
+        renderStars();
+        document.getElementById('total-price').innerText = price.toLocaleString() + " so'm";
     }
 
-    function updateFooter() {
-        document.getElementById('total-price').innerText = selected.price.toLocaleString() + " so'm";
-    }
-
-    // --- ORDER PROCESS ---
-    async function processOrder() {
+    // --- 4. ORDER LOGIC ---
+    function processOrder() {
         const target = document.getElementById('target-user').value;
-        if(!selected.id) return alert("Xizmatni tanlang!");
-        if(!target) return alert("Username kiriting!");
+        if(!selected.id || !target) return alert("Paket va usernameni kiriting!");
 
-        const orderId = "ORD-" + Math.random().toString(36).substring(2, 10).toUpperCase();
-        
-        const newOrder = {
-            userId: user.id,
+        const orderId = "ORD-" + Date.now();
+        const orderData = {
+            userId: currentUser.id,
             target: target,
             product: selected.id,
             price: selected.price,
@@ -271,53 +191,33 @@
             timestamp: Date.now()
         };
 
-        try {
-            await db.ref('orders/' + orderId).set(newOrder);
-            // Click P2P link (Your provided link)
+        db.ref('orders/' + orderId).set(orderData).then(() => {
+            // Click P2P link
             window.location.href = "https://my.click.uz/clickp2p/30325C351A3F7F8C133EC334D17080FB834F5478346C01564BA3C310DA04F48F";
-        } catch(e) {
-            alert("Xatolik: " + e.message);
-        }
+        });
     }
 
-    // --- HISTORY & STATUSES ---
     function fetchHistory() {
-        db.ref('orders').orderByChild('userId').equalTo(user.id).on('value', snap => {
+        db.ref('orders').orderByChild('userId').equalTo(currentUser.id).on('value', snap => {
             const list = snap.val();
             const container = document.getElementById('history-list');
-            if(!list) {
-                container.innerHTML = `<div class="text-center py-4 text-muted">Hozircha buyurtmalar yo'q</div>`;
-                return;
-            }
+            if(!list) return container.innerHTML = "<p class='text-muted small'>Hozircha buyurtmalar yo'q</p>";
 
             const html = Object.keys(list).reverse().map(id => {
                 const o = list[id];
-                const statusNames = {
-                    'pending': 'Kutilmoqda',
-                    'approved': 'To\'lov tasdiqlandi',
-                    'rejected': 'Rad etildi',
-                    'done': 'Muvaffaqiyatli'
-                };
                 return `
-                <div class="h-item animate__animated animate__fadeInUp">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="fw-bold">${o.product.toUpperCase()}</span>
-                        <span class="status-pill s-${o.status}">${statusNames[o.status]}</span>
+                <div class="h-item d-flex justify-content-between align-items-center animate__animated animate__fadeIn">
+                    <div>
+                        <div class="fw-bold">${o.product.toUpperCase()} - @${o.target}</div>
+                        <small class="text-muted">${new Date(o.timestamp).toLocaleDateString()}</small>
                     </div>
-                    <div class="d-flex justify-content-between align-items-end">
-                        <small class="text-muted">Target: @${o.target}</small>
-                        <span class="fw-800 text-dark">${o.price.toLocaleString()} so'm</span>
-                    </div>
-                </div>
-                `;
+                    <span class="status-pill s-${o.status}">${o.status}</span>
+                </div>`;
             }).join('');
             container.innerHTML = html;
         });
     }
 </script>
 
-<script async src="https://telegram.org/js/telegram-widget.js?22" data-telegram-login="starsuz_authbot" data-size="large" data-onauth="onTelegramAuth(user)" data-request-access="write"></script>
-
 </body>
-
 </html>
