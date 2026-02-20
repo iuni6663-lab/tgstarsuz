@@ -2,280 +2,341 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>TGSTORE UZ | Professional</title>
-
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O'zbekiston Superligasi - Live Stats</title>
     <style>
         :root {
-            --bg-deep: #000000;
-            --glass: rgba(255, 255, 255, 0.03);
-            --accent: #007AFF;
-            --success: #32D74B;
-            --warning: #FFD60A;
-            --danger: #FF453A;
-            --border: rgba(255, 255, 255, 0.1);
+            --primary: #004a99;
+            --secondary: #f4f4f4;
+            --accent: #ffd700;
+            --text: #333;
+            --white: #ffffff;
+            --border: #ddd;
         }
 
-        body {
-            background-color: var(--bg-deep);
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-            margin: 0; padding: 0;
-            user-select: none;
-        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { margin: 0; background-color: var(--secondary); color: var(--text); line-height: 1.6; }
 
-        .container-main { max-width: 500px; margin: 0 auto; padding: 20px; padding-bottom: 120px; }
+        /* Navigation */
+        nav { background: var(--primary); color: var(--white); padding: 1rem; position: sticky; top: 0; z-index: 1000; display: flex; overflow-x: auto; gap: 15px; }
+        nav button { background: transparent; border: 1px solid var(--white); color: var(--white); padding: 8px 15px; cursor: pointer; border-radius: 4px; white-space: nowrap; transition: 0.3s; }
+        nav button:hover, nav button.active { background: var(--accent); color: var(--primary); border-color: var(--accent); }
 
-        /* --- Account Status Component --- */
-        .profile-card {
-            background: var(--glass); border: 1px solid var(--border);
-            border-radius: 24px; padding: 20px; margin-bottom: 30px;
-            backdrop-filter: blur(20px);
-        }
-        .status-pill {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 5px 12px; border-radius: 100px; font-size: 11px;
-            font-weight: 800; text-transform: uppercase; margin-top: 10px;
-        }
-        .pill-unverified { background: rgba(255,255,255,0.1); color: #fff; }
-        .pill-pending { background: rgba(255, 214, 10, 0.1); color: var(--warning); }
-        .pill-verified { background: rgba(50, 215, 75, 0.1); color: var(--success); }
-        .pill-rejected { background: rgba(255, 69, 58, 0.1); color: var(--danger); }
+        .container { max-width: 1100px; margin: 20px auto; padding: 0 15px; }
+        .card { background: var(--white); border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; overflow-x: auto; }
+        
+        h2 { border-left: 5px solid var(--primary); padding-left: 10px; color: var(--primary); }
 
-        /* --- Grid & Items --- */
-        #shop-engine { display: none; }
-        .stars-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .star-item {
-            background: var(--glass); border: 1px solid var(--border);
-            border-radius: 20px; padding: 20px; text-align: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .star-item.active { border-color: var(--accent); background: rgba(0, 122, 255, 0.1); transform: scale(1.02); }
-        .star-icon { width: 50px; margin-bottom: 10px; filter: drop-shadow(0 4px 10px rgba(255,215,0,0.3)); }
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: #f8f9fa; position: sticky; top: 0; }
+        tr:hover { background: #f1f7ff; }
 
-        /* --- Order History (Minimalist) --- */
-        .history-box { margin-top: 40px; }
-        .history-item {
-            padding: 15px 0; border-bottom: 1px solid var(--border);
-            display: flex; justify-content: space-between; align-items: flex-start;
-        }
-        .order-meta { font-size: 11px; color: #888; margin-top: 4px; }
-        .order-status-text { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        /* Match List */
+        .match-item { display: grid; grid-template-columns: 1fr 80px 1fr; align-items: center; text-align: center; padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+        .match-item:hover { background: #eef; transform: translateY(-2px); }
+        .team-name { font-weight: bold; }
+        .score { background: var(--primary); color: white; padding: 5px 10px; border-radius: 4px; font-weight: bold; }
+        .match-date { grid-column: 1 / span 3; font-size: 0.8rem; color: #666; margin-bottom: 5px; }
 
-        /* --- Footer Button --- */
-        .fixed-footer {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            padding: 20px; background: linear-gradient(to top, #000 80%, transparent);
-            z-index: 1000;
-        }
-        .btn-action {
-            background: var(--accent); color: white; border: none;
-            width: 100%; padding: 18px; border-radius: 18px;
-            font-weight: 700; font-size: 16px; transition: 0.3s;
-        }
-        .btn-action:disabled { background: #1c1c1e; color: #444; }
+        /* News */
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .news-card { background: white; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; }
+        .news-card img { width: 100%; height: 180px; object-fit: cover; }
+        .news-card-content { padding: 15px; }
+        .news-card h3 { font-size: 1rem; margin: 0 0 10px 0; height: 3em; overflow: hidden; }
 
-        /* --- Locked Overlays --- */
-        .blocked-screen {
-            text-align: center; padding: 40px 20px;
-        }
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); overflow-y: auto; }
+        .modal-content { background: white; margin: 5% auto; padding: 30px; width: 90%; max-width: 800px; border-radius: 10px; position: relative; }
+        .close { position: absolute; right: 20px; top: 10px; font-size: 30px; cursor: pointer; }
+
+        /* Stats & Lineups */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+        
+        .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dotted #ccc; }
+        .badge { padding: 2px 6px; border-radius: 3px; font-size: 0.8rem; color: white; }
+        .yellow-card { background: #ffd700; color: black; }
+        .red-card { background: #ff4d4d; }
+        .goal { background: #28a745; }
+
+        /* Search/Filters */
+        .filters { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; }
+        input, select { padding: 8px; border: 1px solid var(--border); border-radius: 4px; flex-grow: 1; }
+
+        .loader { text-align: center; padding: 50px; font-size: 1.2rem; color: var(--primary); }
     </style>
 </head>
 <body>
 
-<div class="container-main">
-    <header class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold m-0">TGSTORE UZ</h4>
-        <i class="fas fa-crown text-warning"></i>
-    </header>
+<nav id="main-nav">
+    <button onclick="router('table')" id="btn-table">Turnir Jadvali</button>
+    <button onclick="router('matches')" id="btn-matches">O'yinlar</button>
+    <button onclick="router('stats')" id="btn-stats">To'purarlar</button>
+    <button onclick="router('news')" id="btn-news">Yangiliklar</button>
+</nav>
 
-    <div class="profile-card">
-        <div class="d-flex align-items-center gap-3">
-            <img id="u-pfp" src="" style="width: 50px; border-radius: 15px;">
-            <div>
-                <div id="u-name" class="fw-bold">Yuklanmoqda...</div>
-                <div id="acc-status-pill" class="status-pill pill-unverified">Tekshirilmoqda...</div>
-            </div>
-        </div>
-        <div id="verification-action" style="display: none;">
-            <p class="small text-secondary mt-3 mb-3">Xarid qilish uchun akkauntingizni tasdiqlatishingiz shart.</p>
-            <button class="btn btn-outline-primary btn-sm w-100 rounded-pill" onclick="requestVerification()">TASDIQLASHNI SO'RASH</button>
-        </div>
-    </div>
-
-    <div id="shop-engine">
-        <h6 class="text-secondary small fw-bold mb-3">STARS PAKETLARI</h6>
-        <div class="stars-grid" id="product-list"></div>
-
-        <div class="mt-4">
-            <h6 class="text-secondary small fw-bold mb-2">QABUL QILUVCHI</h6>
-            <input type="text" id="target-id" class="form-control bg-dark border-0 text-white p-3 rounded-4" placeholder="@username">
-        </div>
-
-        <div class="history-box">
-            <h6 class="text-secondary small fw-bold mb-3">BUYURTMALARIM</h6>
-            <div id="history-container"></div>
-        </div>
-    </div>
-
-    <div id="rejected-screen" style="display: none;" class="blocked-screen">
-        <i class="fas fa-user-slash fa-3x text-danger mb-3"></i>
-        <h4 class="fw-bold">Akkauntingiz Rad Etildi</h4>
-        <p class="text-secondary">Sizning so'rovingiz admin tomonidan rad etilgan. Qo'llab-quvvatlash bilan bog'laning.</p>
-    </div>
+<div class="container" id="app">
+    <div class="loader">Yuklanmoqda...</div>
 </div>
 
-<div class="fixed-footer">
-    <button id="main-btn" class="btn-action" disabled onclick="handleOrder()">TASDIQLASH KERAK</button>
+<div id="newsModal" class="modal">
+    <div class="modal-content" id="modalBody"></div>
 </div>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyDgMXCfXW_I70t0m-pZhfi7HTbiCBB70dg",
-        databaseURL: "https://tgstars-29ae3-default-rtdb.firebaseio.com",
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const tg = window.Telegram.WebApp;
+    const API_BASE = "https://api.pfl.uz/v1/web";
+    const CACHE_TIME = 5 * 60 * 1000; // 5 minut
 
-    const PRODUCTS = [
-        { id: 's50', stars: 50, price: 15000 },
-        { id: 's100', stars: 100, price: 29000 },
-        { id: 's250', stars: 250, price: 69000 },
-        { id: 's500', stars: 500, price: 135000 }
-    ];
+    // --- Core Engine ---
 
-    let user = tg.initDataUnsafe.user || { id: 0, first_name: 'Tester' };
-    let selected = null;
-
-    window.onload = () => {
-        tg.expand();
-        document.getElementById('u-name').innerText = user.first_name;
-        document.getElementById('u-pfp').src = user.photo_url || 'https://ui-avatars.com/api/?name=' + user.first_name;
-        syncData();
-    };
-
-    function syncData() {
-        db.ref('users/' + user.id).on('value', snap => {
-            const data = snap.val();
-            const pill = document.getElementById('acc-status-pill');
-            const vAction = document.getElementById('verification-action');
-            const shop = document.getElementById('shop-engine');
-            const rejected = document.getElementById('rejected-screen');
-            const mainBtn = document.getElementById('main-btn');
-
-            if (!data) {
-                pill.className = "status-pill pill-unverified";
-                pill.innerText = "UNVERIFIED";
-                vAction.style.display = "block";
-                return;
+    async function fetchData(endpoint) {
+        const cacheKey = btoa(endpoint);
+        const cached = localStorage.getItem(cacheKey);
+        
+        if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Date.now() - parsed.timestamp < CACHE_TIME) {
+                return parsed.data;
             }
+        }
 
-            pill.innerText = data.status.toUpperCase();
-            pill.className = "status-pill pill-" + data.status;
-
-            if (data.status === 'verified') {
-                vAction.style.display = "none";
-                shop.style.display = "block";
-                rejected.style.display = "none";
-                mainBtn.innerText = "Xaridni tanlang";
-                renderProducts();
-                loadHistory();
-            } else if (data.status === 'pending') {
-                vAction.style.display = "none";
-                shop.style.display = "none";
-                mainBtn.innerText = "TASDIQLANISHI KUTILMOQDA";
-            } else if (data.status === 'rejected') {
-                vAction.style.display = "none";
-                shop.style.display = "none";
-                rejected.style.display = "block";
-                mainBtn.style.display = "none";
-            }
-        });
+        try {
+            const response = await fetch(`${API_BASE}${endpoint}`);
+            const result = await response.json();
+            const data = result.data;
+            
+            localStorage.setItem(cacheKey, JSON.stringify({
+                timestamp: Date.now(),
+                data: data
+            }));
+            return data;
+        } catch (error) {
+            console.error("API Error:", error);
+            return null;
+        }
     }
 
-    function requestVerification() {
-        db.ref('users/' + user.id).set({
-            name: user.first_name,
-            username: user.username || 'n/a',
-            status: 'pending',
-            date: Date.now()
-        });
-        tg.HapticFeedback.notificationOccurred('success');
+    function router(page, params = null) {
+        const app = document.getElementById('app');
+        app.innerHTML = '<div class="loader">Yuklanmoqda...</div>';
+        
+        // Active button state
+        document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
+        const activeBtn = document.getElementById(`btn-${page}`);
+        if(activeBtn) activeBtn.classList.add('active');
+
+        switch(page) {
+            case 'table': renderTable(); break;
+            case 'matches': renderMatches(); break;
+            case 'match-detail': renderMatchDetail(params); break;
+            case 'stats': renderStats(); break;
+            case 'news': renderNews(); break;
+        }
     }
 
-    function renderProducts() {
-        const cont = document.getElementById('product-list');
-        cont.innerHTML = PRODUCTS.map(p => `
-            <div class="star-item" id="p-${p.id}" onclick="pick('${p.id}')">
-                <img src="https://telegram.org/img/tgstars.png" class="star-icon">
-                <div class="fw-bold">${p.stars} Stars</div>
-                <div class="small text-secondary">${p.price.toLocaleString()} s</div>
+    // --- Page Renderers ---
+
+    async function renderTable() {
+        const data = await fetchData('/game/table?tournamentId=1&seasonId=11');
+        let html = `<h2>Turnir Jadvali (Superliga)</h2><div class="card"><table>
+            <thead><tr><th>#</th><th>Klub</th><th>O'</th><th>G'</th><th>D</th><th>M</th><th>To'plar</th><th>Ochko</th></tr></thead><tbody>`;
+        
+        data.forEach((item, index) => {
+            html += `<tr>
+                <td>${index + 1}</td>
+                <td class="team-name">${item.club.name_uz}</td>
+                <td>${item.game_count}</td>
+                <td>${item.win}</td>
+                <td>${item.draw}</td>
+                <td>${item.loss}</td>
+                <td>${item.goals_for}-${item.goals_against}</td>
+                <td><strong>${item.score}</strong></td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+        document.getElementById('app').innerHTML = html;
+    }
+
+    async function renderMatches() {
+        const data = await fetchData('/game/calendar?tournamentId=1&seasonId=11');
+        let html = `<h2>O'yinlar ro'yxati</h2><div class="card">`;
+        
+        data.forEach(match => {
+            const score = match.score_home !== null ? `${match.score_home} : ${match.score_away}` : 'v';
+            html += `
+                <div class="match-item" onclick="router('match-detail', ${match.id})">
+                    <div class="match-date">${new Date(match.date).toLocaleString('uz-UZ')} | Tur: ${match.round_id}</div>
+                    <div class="team-name">${match.home_club.name_uz}</div>
+                    <div class="score">${score}</div>
+                    <div class="team-name">${match.away_club.name_uz}</div>
+                </div>`;
+        });
+        html += `</div>`;
+        document.getElementById('app').innerHTML = html;
+    }
+
+    async function renderMatchDetail(matchId) {
+        const match = await fetchData(`/game/${matchId}`);
+        if(!match) return;
+
+        let html = `
+            <button onclick="router('matches')" style="margin-bottom:10px">← Orqaga</button>
+            <div class="card">
+                <div style="text-align:center">
+                    <p>${new Date(match.date).toLocaleString()}</p>
+                    <div style="display:flex; justify-content:space-around; align-items:center; font-size:1.5rem">
+                        <div style="flex:1"><strong>${match.home_club.name_uz}</strong></div>
+                        <div class="score" style="font-size:2rem; padding: 10px 20px;">${match.score_home} : ${match.score_away}</div>
+                        <div style="flex:1"><strong>${match.away_club.name_uz}</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3>Statistika</h3>
+                    ${renderStatsList(match.statistics)}
+                </div>
+                <div class="card">
+                    <h3>Voqealar</h3>
+                    ${renderEvents(match.events)}
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h3>${match.home_club.name_uz} - Tarkib</h3>
+                    ${renderLineup(match.home_lineup)}
+                </div>
+                <div class="card">
+                    <h3>${match.away_club.name_uz} - Tarkib</h3>
+                    ${renderLineup(match.away_lineup)}
+                </div>
+            </div>
+        `;
+        document.getElementById('app').innerHTML = html;
+    }
+
+    function renderStatsList(stats) {
+        if(!stats || stats.length === 0) return "<p>Ma'lumot yo'q</p>";
+        return stats.map(s => `
+            <div class="stat-row">
+                <span>${s.home_value}</span>
+                <span style="color:#666; font-size:0.9rem">${s.name_uz}</span>
+                <span>${s.away_value}</span>
             </div>
         `).join('');
     }
 
-    function pick(id) {
-        selected = PRODUCTS.find(x => x.id === id);
-        document.querySelectorAll('.star-item').forEach(el => el.classList.remove('active'));
-        document.getElementById('p-' + id).classList.add('active');
-        const btn = document.getElementById('main-btn');
-        btn.disabled = false;
-        btn.innerText = `TO'LOV QILISH: ${selected.price.toLocaleString()} S`;
+    function renderEvents(events) {
+        if(!events || events.length === 0) return "<p>O'yinda hodisalar qayd etilmadi</p>";
+        return events.map(e => `
+            <div class="stat-row">
+                <span>${e.minute}'</span>
+                <span>
+                    <span class="badge ${e.event_type_id == 1 ? 'goal' : e.event_type_id == 3 ? 'yellow-card' : 'red-card'}">
+                        ${e.event_type_id == 1 ? 'Gol' : 'Karta'}
+                    </span> 
+                    ${e.player.name_uz}
+                </span>
+            </div>
+        `).join('');
     }
 
-    function handleOrder() {
-        const target = document.getElementById('target-id').value;
-        if (!target) return tg.showAlert("Qabul qiluvchini kiriting!");
+    function renderLineup(lineup) {
+        if(!lineup) return "E’lon qilinmagan";
+        return `<table>${lineup.map(p => `<tr><td>${p.number}</td><td>${p.player.name_uz}</td><td>${p.position_id}</td></tr>`).join('')}</table>`;
+    }
 
-        const oid = "TS-" + Date.now().toString().slice(-6);
-        db.ref('orders/' + oid).set({
-            userId: user.id,
-            userName: user.first_name,
-            product: selected.stars + " Stars",
-            price: selected.price,
-            target: target.replace('@', ''),
-            status: 'kutilmoqda',
-            createdAt: firebase.database.ServerValue.TIMESTAMP
-        }).then(() => {
-            tg.showPopup({
-                title: 'To\'lov jarayoni',
-                message: 'Buyurtma saqlandi. Click orqali to\'lovni yakunlang.',
-                buttons: [{text: 'CLICK TO\'LOV', type: 'ok'}]
-            }, () => {
-                // Click Auto-To'lov linki
-                tg.openLink("https://my.click.uz/clickp2p/30325C351A3F7F8C133EC334D17080FB834F5478346C01564BA3C310DA04F48F");
-            });
+    async function renderStats() {
+        const players = await fetchData('/game/statistic/players?tournamentId=1&seasonId=11');
+        
+        let html = `
+            <h2>O'yinchilar statistikasi</h2>
+            <div class="filters">
+                <input type="text" id="playerSearch" placeholder="Ism bo'yicha qidirish..." oninput="filterPlayers()">
+            </div>
+            <div class="card">
+                <table id="playerTable">
+                    <thead><tr><th>O'yinchi</th><th>Klub</th><th>O'</th><th>Gol</th><th>Assist</th><th>Sariq</th></tr></thead>
+                    <tbody id="playerBody">`;
+        
+        players.forEach(p => {
+            html += `<tr>
+                <td class="team-name">${p.player.name_uz}</td>
+                <td>${p.club.name_uz}</td>
+                <td>${p.game_count}</td>
+                <td style="color:green; font-weight:bold">${p.goal_count}</td>
+                <td>${p.assistant_count}</td>
+                <td>${p.yellow_card_count}</td>
+            </tr>`;
+        });
+        html += `</tbody></table></div>`;
+        document.getElementById('app').innerHTML = html;
+    }
+
+    async function renderNews() {
+        const news = await fetchData('/web/news?limit=20&orderBy=publicDate&orderType=DESC');
+        let html = `<h2>So'nggi yangiliklar</h2><div class="news-grid">`;
+        
+        news.forEach(item => {
+            html += `
+                <div class="news-card" onclick="openNews('${encodeURIComponent(JSON.stringify(item))}')">
+                    <img src="https://admin.pfl.uz/uploads/news/${item.image}" onerror="this.src='https://via.placeholder.com/300x180?text=PFL+News'">
+                    <div class="news-card-content">
+                        <h3>${item.title_uz}</h3>
+                        <p style="font-size:0.8rem; color:#888">${new Date(item.public_date).toLocaleDateString()}</p>
+                    </div>
+                </div>`;
+        });
+        html += `</div>`;
+        document.getElementById('app').innerHTML = html;
+    }
+
+    // --- Helpers & UI Interactivity ---
+
+    function filterPlayers() {
+        const query = document.getElementById('playerSearch').value.toLowerCase();
+        const rows = document.querySelectorAll('#playerBody tr');
+        rows.forEach(row => {
+            const name = row.cells[0].innerText.toLowerCase();
+            row.style.display = name.includes(query) ? '' : 'none';
         });
     }
 
-    function loadHistory() {
-        db.ref('orders').orderByChild('userId').equalTo(user.id).on('value', snap => {
-            const orders = snap.val();
-            const container = document.getElementById('history-container');
-            if(!orders) return;
-
-            container.innerHTML = Object.values(orders).reverse().map(o => `
-                <div class="history-item">
-                    <div>
-                        <div class="fw-bold small">${o.product} (@${o.target})</div>
-                        <div class="order-meta">${new Date(o.createdAt).toLocaleString()}</div>
-                    </div>
-                    <div class="text-end">
-                        <div class="order-status-text" style="color: ${o.status==='done'?'#32D74B':'#FFD60A'}">${o.status}</div>
-                        <div class="small text-secondary">${o.price.toLocaleString()} s</div>
-                    </div>
-                </div>
-            `).join('');
-        });
+    function openNews(dataStr) {
+        const item = JSON.parse(decodeURIComponent(dataStr));
+        const modal = document.getElementById('newsModal');
+        const body = document.getElementById('modalBody');
+        
+        body.innerHTML = `
+            <span class="close" onclick="closeModal()">&times;</span>
+            <img src="https://admin.pfl.uz/uploads/news/${item.image}" style="width:100%; border-radius:8px; margin-bottom:20px;">
+            <h2>${item.title_uz}</h2>
+            <p style="color:#666">${new Date(item.public_date).toLocaleString()}</p>
+            <hr>
+            <div style="font-size:1.1rem; line-height:1.8">${item.body_uz || item.lead_uz}</div>
+        `;
+        modal.style.display = "block";
     }
+
+    function closeModal() {
+        document.getElementById('newsModal').style.display = "none";
+    }
+
+    // Modalni tashqariga bosganda yopish
+    window.onclick = function(event) {
+        const modal = document.getElementById('newsModal');
+        if (event.target == modal) closeModal();
+    }
+
+    // Start App
+    window.onload = () => router('table');
+
 </script>
+
 </body>
 </html>
